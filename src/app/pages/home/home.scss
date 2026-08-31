@@ -1,0 +1,39 @@
+@use '../../../styles/mixin' as mixins;
+
+:host {
+    display: block;
+    min-height: 100vh;
+    background-color: #35273A;
+}
+
+.text-primary {
+    color: #FFB770;
+}
+
+.header,
+.home {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding-inline: 32px;
+}
+
+.hero-content {
+    @include mixins.display-flex(row, center, center);
+}
+
+.surveys {
+    &__cards {
+        @include mixins.display-flex(row, flex-start, center);
+    }
+}
+
+.surveys-overview {
+
+    &__tab {
+
+        &--selected {
+            background-color: red;
+        }
+    }
+}
