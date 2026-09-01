@@ -1,12 +1,16 @@
 import { Routes } from '@angular/router';
 import { Home } from './pages/home/home';
-import { SurveyCard } from './components/survey-card/survey-card';
-
+import { CreateSurvey } from './pages/create-survey/create-survey';
 export const routes: Routes = [
     {
         path: '',
         component: Home,
     },
+    {
+        path: 'create-survey',
+        component: CreateSurvey,
+    },
+
 ];
 
 

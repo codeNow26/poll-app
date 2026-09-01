@@ -1,0 +1,36 @@
+<main class="create-survey">
+    <header class="create-survey__header">
+        <div class="create-survey__header-left">
+            <p class="create-survey__draft">Draft</p>
+            <h1 class="create-survey__title">Create new survey</h1>
+        </div>
+        <div class="create-survey__header-right">
+            <button class="create-survey__cancel" type="button" routerLink="/">Cancel</button>
+        </div>
+    </header>
+    <form id="survey-form" class="create-survey__form">
+        <div class="create-survey__details">
+
+            <div class="create-survey__details-left">
+                <div class="create-survey__field">
+                    <label for="survey-name" class="create-survey__label">Survey Name</label>
+                    <input type="text" id="survey-name" class="create-survey__input">
+                </div>
+
+                <div class="create-survey__details-row">
+                    <div class="create-survey__field">
+                        <label for="survey-enddate" class="create-survey__label">Set End Date (optional)</label>
+                        <input type="date" id="survey-enddate" class="create-survey__input">
+                    </div>
+                </div>
+            </div>
+
+            <div class="create-survey__details-right">
+                <div class="create-survey__field">
+                    <label for="survey-description" class="create-survey__label">Survey Description (optional)</label>
+                    <textarea id="survey-description" class="create-survey__textarea"></textarea>
+                </div>
+            </div>
+        </div>
+    </form>
+</main>

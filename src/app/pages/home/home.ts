@@ -1,10 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { SurveyCard } from '../../components/survey-card/survey-card';
 import { Survey } from '../../models/survey.model/survey.model';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-home',
-  imports: [SurveyCard],
+  imports: [SurveyCard, RouterLink],
   templateUrl: './home.html',
   styleUrl: './home.scss',
 })
@@ -12,22 +13,22 @@ import { Survey } from '../../models/survey.model/survey.model';
 export class Home implements OnInit {
   surveys: Survey[] = [
     {
-      category: 'Work',
+      category: 'Gaming & Entertainment',
       title: 'wie oft spielst du?',
       deadline: '2026-09-30',
     },
     {
-      category: 'tiere',
+      category: 'Team Activities',
       title: 'welche Haustiere hast du?',
       deadline: '2026-08-15',
     },
     {
-      category: 'technologie',
+      category: 'Technology & Innovation',
       title: 'welche Technologien nutzt du am meisten?',
       deadline: '2026-09-04',
     },
     {
-      category: 'beziehungen',
+      category: 'Health & Wellness',
       title: 'wieviele Beziehungen hattest du bereits?',
       deadline: '2026-09-01',
     },
@@ -38,14 +39,15 @@ export class Home implements OnInit {
   pastSurveys: Survey[] = [];
 
   selectedTab: 'active' | 'past' = 'active';
-  selectedCategory: 'All' | 'Work' | 'Events' | 'Feedback' = 'All';
+  selectedCategory: 'All Surveys' | 'Team Activities' | 'Health & Wellness' | 'Gaming & Entertainment' | 'Education & Learning' | 'Lifestyle & Preferences' | 'Technology & Innovation' = 'All Surveys';
+
   isCategoryDropdownOpen = false;
 
   switchSurveys(category: 'active' | 'past'): void {
     this.selectedTab = category;
   }
 
-  switchCategory(button: 'All' | 'Work' | 'Events' | 'Feedback'): void {
+  switchCategory(button: 'All Surveys' | 'Team Activities' | 'Health & Wellness' | 'Gaming & Entertainment' | 'Education & Learning' | 'Lifestyle & Preferences' | 'Technology & Innovation'): void {
     this.selectedCategory = button;
     this.isCategoryDropdownOpen = false;
   }
@@ -81,7 +83,7 @@ export class Home implements OnInit {
         : this.pastSurveys;
 
     return surveysToFilter.filter((survey) =>
-      this.selectedCategory === 'All' ||
+      this.selectedCategory === 'All Surveys' ||
       survey.category === this.selectedCategory
     );
   }

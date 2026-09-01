@@ -13,7 +13,7 @@
                 <p class="hero-left__description">Create and share surveys in minutes - from team events to
                     workplace culture. Collect opinions, engage
                     your audience, and turn feedback into action.</p>
-                <button type="button" class="hero-left__button">New Survey</button>
+                <button type="button" class="hero-left__button" routerLink="/create-survey">New Survey</button> 
             </div>
 
             <div class="hero-right">
@@ -38,21 +38,41 @@
             <div class="surveys-overview__tabs">
                 <button [class.surveys-overview__tab--selected]="selectedTab === 'active'"
                     (click)="switchSurveys('active')" class="surveys-overview__tab">Active Surveys</button>
-                <button [class.surveys-overview__tab--selected]="selectedTab === 'past'" (click)="switchSurveys('past')" class="surveys-overview__tab">Past Surveys</button>
+                <button [class.surveys-overview__tab--selected]="selectedTab === 'past'" (click)="switchSurveys('past')"
+                    class="surveys-overview__tab">Past Surveys</button>
             </div>
-            <button (click)="toggleCategoryDropdown()" class="surveys-overview__category-button" type="button">{{ selectedCategory }}</button>
+            <button [class.surveys-overview__category-button--selected]="selectedCategory !== 'All Surveys'"
+                (click)="toggleCategoryDropdown()" class="surveys-overview__category-button" type="button">
+                Sort by categories
+            <img [class.surveys-overview__category-arrow--open]="isCategoryDropdownOpen" class="surveys-overview__category-arrow" src="icons/arrow_drop_down.svg" alt="">
+            </button>
+            @if ( selectedCategory !== 'All Surveys') {
+            <p class="surveys-overview__selected-category">
+                {{ selectedCategory }}
+            </p>
+            }
             @if (isCategoryDropdownOpen) {
-                <div class="surveys-overview__category-menu">
-                    <button (click)="switchCategory('All')">All</button>
-                    <button (click)="switchCategory('Work')">Work</button>
-                    <button (click)="switchCategory('Events')">Events</button>
-                    <button (click)="switchCategory('Feedback')">Feedback</button>
-                </div>
+            <div class="surveys-overview__category-menu">
+                <button (click)="switchCategory('All Surveys')">All Surveys</button>
+                <button class="surveys-overview__category-option" (click)="switchCategory('Health & Wellness')">Health &
+                    Wellness</button>
+                <button class="surveys-overview__category-option"
+                    (click)="switchCategory('Gaming & Entertainment')">Gaming & Entertainment</button>
+                <button class="surveys-overview__category-option"
+                    (click)="switchCategory('Education & Learning')">Education & Learning</button>
+                <button class="surveys-overview__category-option"
+                    (click)="switchCategory('Lifestyle & Preferences')">Lifestyle & Preferences</button>
+                <button class="surveys-overview__category-option"
+                    (click)="switchCategory('Technology & Innovation')">Technology & Innovation</button>
+            </div>
             }
             <div class="surveys-overview__list">
-                 @for (item of getVisibleSurveys(); track item.title) {
-                    <app-survey-card [survey]="item" />
+                @for (item of getVisibleSurveys(); track item.title) {
+                <app-survey-card [survey]="item" />
+                } @empty {
+                    <p class="surveys-overview__empty-message">no surveys available</p>
                 }
+                
             </div>
         </div>
     </section>

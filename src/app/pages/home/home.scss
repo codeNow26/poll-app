@@ -36,4 +36,20 @@
             background-color: red;
         }
     }
+
+    &__category-button {
+
+
+        &--selected {
+            background-color: yellow;
+
+        }
+    }
+
+    &__category-arrow {
+
+        &--open {
+            transform: rotate(180deg);
+        }
+    }
 }
