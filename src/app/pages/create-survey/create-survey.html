@@ -14,23 +14,99 @@
             <div class="create-survey__details-left">
                 <div class="create-survey__field">
                     <label for="survey-name" class="create-survey__label">Survey Name</label>
-                    <input type="text" id="survey-name" class="create-survey__input">
+                    <input type="text" [formControl]="surveyName" id="survey-name" class="create-survey__input">
                 </div>
 
                 <div class="create-survey__details-row">
                     <div class="create-survey__field">
                         <label for="survey-enddate" class="create-survey__label">Set End Date (optional)</label>
-                        <input type="date" id="survey-enddate" class="create-survey__input">
+                        <input [formControl]="surveyDeadline" type="date" id="survey-enddate"
+                            class="create-survey__input">
+                    </div>
+                    <div class="create-survey__category">
+                        <button [class.surveys-overview__category-button--selected]="selectedCategory !== ''"
+                            (click)="toggleCategoryDropdown()" class="surveys-overview__category-button" type="button">
+                            Choose category
+                            <img [class.surveys-overview__category-arrow--open]="isCategoryDropdownOpen"
+                                class="surveys-overview__category-arrow" src="icons/arrow_drop_down.svg" alt="">
+                        </button>
+                        @if ( selectedCategory !== '') {
+                        <p class="surveys-overview__selected-category">
+                            {{ selectedCategory }}
+                        </p>
+                        }
+                        @if (isCategoryDropdownOpen) {
+                        <div class="surveys-overview__category-menu">
+                            <button type="button" class="surveys-overview__category-option"
+                                (click)="switchCategory('Health & Wellness')">Health &
+                                Wellness</button>
+                            <button type="button" class="surveys-overview__category-option"
+                                (click)="switchCategory('Gaming & Entertainment')">Gaming & Entertainment</button>
+                            <button type="button" class="surveys-overview__category-option"
+                                (click)="switchCategory('Education & Learning')">Education & Learning</button>
+                            <button type="button" class="surveys-overview__category-option"
+                                (click)="switchCategory('Team Activities')">Team Activities</button>
+                            <button type="button" class="surveys-overview__category-option"
+                                (click)="switchCategory('Lifestyle & Preferences')">Lifestyle & Preferences</button>
+                            <button type="button" class="surveys-overview__category-option"
+                                (click)="switchCategory('Technology & Innovation')">Technology & Innovation</button>
+                        </div>
+                        }
                     </div>
                 </div>
             </div>
 
+
             <div class="create-survey__details-right">
                 <div class="create-survey__field">
                     <label for="survey-description" class="create-survey__label">Survey Description (optional)</label>
-                    <textarea id="survey-description" class="create-survey__textarea"></textarea>
+                    <textarea [formControl]="surveyDescription" id="survey-description"
+                        class="create-survey__textarea"></textarea>
                 </div>
             </div>
         </div>
+
+        <div class="create-survey__questions">
+
+            <fieldset class="create-survey__question">
+                <legend id="question1-heading">1. Question</legend>
+                <input [formControl]="questionText" class="create-survey__input" type="text" id="question1"
+                    aria-labelledby="question1-heading" placeholder="Which date would work best for you?">
+
+                <div class="create-survey__answers">
+
+                    <div class="create-survey__answers-header">
+                        <p>Answers</p>
+                        <input [formControl]="multipleAnswers" id="question1-multiple" type="checkbox">
+                        <label for="question1-multiple" class="create-survey__label">Allow multiple answers</label>
+                    </div>
+
+                    <div class="create-survey__answer">
+                        <label for="question1-answer-a" class="create-survey__label">A:</label>
+                        <input [formControl]="answerTextA" class="create-survey__input" type="text"
+                            id="question1-answer-a">
+                    </div>
+
+                    <div class="create-survey__answer">
+                        <label for="question1-answer-b" class="create-survey__label">B:</label>
+                        <input [formControl]="answerTextB" class="create-survey__input" type="text"
+                            id="question1-answer-b">
+                    </div>
+                </div>
+
+                <div class="create-survey__add-answer">
+                    <button type="button" class="create-survey__add-answer-btn">Add Answer</button>
+                </div>
+
+            </fieldset>
+        </div>
+
+        <button type="button" class="create-survey__add-question">Add Next Question</button>
+
+
+
+        <button type="submit" class="create-survey__publish">Publish</button>
+
+        <button type="button" (click)="checkQuestion()">Test</button>
     </form>
 </main>
