@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { FormControl, ReactiveFormsModule, FormGroup } from '@angular/forms';
+import { FormControl, ReactiveFormsModule, FormGroup, FormArray } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 
 @Component({
@@ -13,22 +13,42 @@ export class CreateSurvey {
   surveyName = new FormControl('');
   surveyDescription = new FormControl('');
   surveyDeadline = new FormControl('');
-  questionText = new FormControl('');
-  answerTextA = new FormControl('');
-  answerTextB = new FormControl('');
-  multipleAnswers = new FormControl(false);
 
-  questionForm = new FormGroup({
-    questionText: this.questionText,
-    answerTextA: this.answerTextA,
-    answerTextB: this.answerTextB,
-    multipleAnswers: this.multipleAnswers
-  });
+  questions = new FormArray([this.createQuestionForm()]);
 
   checkQuestion() {
-    console.log(this.questionForm.value);
+    console.log(this.questions.value);
+    console.log(this.getAnswers(0).value);
   }
 
+  createQuestionForm(): FormGroup {
+    return new FormGroup({
+      questionText: new FormControl(''),
+      answers: new FormArray([
+        new FormControl(''),
+        new FormControl(''),
+      ]),
+      multipleAnswers: new FormControl(false)
+    });
+  }
+
+  addQuestion(): void {
+    this.questions.push(this.createQuestionForm());
+  }
+
+  getAnswers(questionIndex: number): FormArray {
+    return this.questions
+      .at(questionIndex)
+      .get('answers') as FormArray;
+  }
+
+  addAnswer(questionIndex: number): void {
+    const answerArray = this.getAnswers(questionIndex);
+
+    if (answerArray.length < 6) {
+      answerArray.push(new FormControl(''));
+    }
+  }
 
   isCategoryDropdownOpen = false;
   selectedCategory: 'Team Activities' | 'Health & Wellness' | 'Gaming & Entertainment' | 'Education & Learning' | 'Lifestyle & Preferences' | 'Technology & Innovation' | '' = '';
@@ -41,4 +61,6 @@ export class CreateSurvey {
     this.selectedCategory = button;
     this.isCategoryDropdownOpen = false;
   }
+
+  letter = ['A', 'B', 'C', 'D', 'E', 'F'];
 }

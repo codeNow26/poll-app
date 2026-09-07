@@ -68,40 +68,47 @@
 
         <div class="create-survey__questions">
 
-            <fieldset class="create-survey__question">
-                <legend id="question1-heading">1. Question</legend>
-                <input [formControl]="questionText" class="create-survey__input" type="text" id="question1"
-                    aria-labelledby="question1-heading" placeholder="Which date would work best for you?">
+            @for (question of questions.controls; track question; let questionIndex = $index) {
+            <fieldset [formGroup]="question" class="create-survey__question">
+                <legend id="question-{{$index + 1}}-heading"> {{ $index + 1 }}. Question</legend>
+                <input formControlName="questionText" class="create-survey__input" type="text"
+                    id="question-{{$index + 1}}-text" aria-labelledby="question-{{$index + 1}}-heading"
+                    placeholder="Which date would work best for you?">
 
                 <div class="create-survey__answers">
 
                     <div class="create-survey__answers-header">
                         <p>Answers</p>
-                        <input [formControl]="multipleAnswers" id="question1-multiple" type="checkbox">
-                        <label for="question1-multiple" class="create-survey__label">Allow multiple answers</label>
+                        <input formControlName="multipleAnswers" id="question-{{$index + 1}}-multiple" type="checkbox">
+                        <label for="question-{{$index + 1}}-multiple" class="create-survey__label">Allow multiple
+                            answers</label>
                     </div>
 
-                    <div class="create-survey__answer">
-                        <label for="question1-answer-a" class="create-survey__label">A:</label>
-                        <input [formControl]="answerTextA" class="create-survey__input" type="text"
-                            id="question1-answer-a">
-                    </div>
-
-                    <div class="create-survey__answer">
-                        <label for="question1-answer-b" class="create-survey__label">B:</label>
-                        <input [formControl]="answerTextB" class="create-survey__input" type="text"
-                            id="question1-answer-b">
+                    <div formArrayName="answers">
+                        @for (answer of getAnswers(questionIndex).controls; track answer; let answerIndex = $index) {
+                        <div class="create-survey__answer">
+                            <label for="question-{{questionIndex + 1}}-answer-{{answerIndex + 1}}"
+                                class="create-survey__label">{{ letter[answerIndex]}}</label>
+                            <input class="create-survey__input" type="text"
+                                id="question-{{questionIndex + 1}}-answer-{{answerIndex + 1}}"
+                                [formControlName]="answerIndex">
+                        </div>
+                        }
                     </div>
                 </div>
 
+
                 <div class="create-survey__add-answer">
-                    <button type="button" class="create-survey__add-answer-btn">Add Answer</button>
+                    <button [disabled]="getAnswers(questionIndex).length > 5" (click)="addAnswer(questionIndex)"
+                        type="button" class="create-survey__add-answer-btn">Add
+                        Answer</button>
                 </div>
 
             </fieldset>
+            }
         </div>
 
-        <button type="button" class="create-survey__add-question">Add Next Question</button>
+        <button (click)="addQuestion()" type="button" class="create-survey__add-question">Add Next Question</button>
 
 
 
