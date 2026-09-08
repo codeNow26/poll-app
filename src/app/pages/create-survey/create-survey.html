@@ -8,7 +8,7 @@
             <button class="create-survey__cancel" type="button" routerLink="/">Cancel</button>
         </div>
     </header>
-    <form id="survey-form" class="create-survey__form">
+    <form [formGroup]="surveyForm" (ngSubmit)="submitSurvey()" id="survey-form" class="create-survey__form">
         <div class="create-survey__details">
 
             <div class="create-survey__details-left">
@@ -24,15 +24,15 @@
                             class="create-survey__input">
                     </div>
                     <div class="create-survey__category">
-                        <button [class.surveys-overview__category-button--selected]="selectedCategory !== ''"
+                        <button [class.surveys-overview__category-button--selected]="selectedCategory.value !== ''"
                             (click)="toggleCategoryDropdown()" class="surveys-overview__category-button" type="button">
                             Choose category
                             <img [class.surveys-overview__category-arrow--open]="isCategoryDropdownOpen"
                                 class="surveys-overview__category-arrow" src="icons/arrow_drop_down.svg" alt="">
                         </button>
-                        @if ( selectedCategory !== '') {
+                        @if ( selectedCategory.value !== '') {
                         <p class="surveys-overview__selected-category">
-                            {{ selectedCategory }}
+                            {{ selectedCategory.value }}
                         </p>
                         }
                         @if (isCategoryDropdownOpen) {
@@ -74,6 +74,8 @@
                 <input formControlName="questionText" class="create-survey__input" type="text"
                     id="question-{{$index + 1}}-text" aria-labelledby="question-{{$index + 1}}-heading"
                     placeholder="Which date would work best for you?">
+                <button (click)="removeQuestion(questionIndex)" [disabled]="questions.length <= 1" type="button">Delete
+                    Question</button>
 
                 <div class="create-survey__answers">
 
@@ -92,6 +94,8 @@
                             <input class="create-survey__input" type="text"
                                 id="question-{{questionIndex + 1}}-answer-{{answerIndex + 1}}"
                                 [formControlName]="answerIndex">
+                            <button type="button" (click)="removeAnswer(questionIndex, answerIndex)"
+                                [disabled]="getAnswers(questionIndex).length < 2">Delete</button>
                         </div>
                         }
                     </div>
@@ -114,6 +118,6 @@
 
         <button type="submit" class="create-survey__publish">Publish</button>
 
-        <button type="button" (click)="checkQuestion()">Test</button>
+        <button type="button" (ngSubmit)="submitSurvey()">Test</button>
     </form>
 </main>

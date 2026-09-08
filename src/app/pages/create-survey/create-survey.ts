@@ -1,6 +1,14 @@
 import { Component } from '@angular/core';
-import { FormControl, ReactiveFormsModule, FormGroup, FormArray } from '@angular/forms';
+import { FormControl, ReactiveFormsModule, FormGroup, FormArray, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+
+type SurveyCategory =
+  | 'Team Activities'
+  | 'Health & Wellness'
+  | 'Gaming & Entertainment'
+  | 'Education & Learning'
+  | 'Lifestyle & Preferences'
+  | 'Technology & Innovation';
 
 @Component({
   selector: 'app-create-survey',
@@ -10,23 +18,31 @@ import { RouterLink } from '@angular/router';
 })
 
 export class CreateSurvey {
-  surveyName = new FormControl('');
+  surveyName = new FormControl('', Validators.required);
   surveyDescription = new FormControl('');
   surveyDeadline = new FormControl('');
-
   questions = new FormArray([this.createQuestionForm()]);
+  selectedCategory = new FormControl<SurveyCategory | ''>('');
 
-  checkQuestion() {
-    console.log(this.questions.value);
-    console.log(this.getAnswers(0).value);
+  surveyForm = new FormGroup({
+    surveyName: this.surveyName,
+    surveyDescription: this.surveyDescription,
+    surveyDeadline: this.surveyDeadline,
+    questions: this.questions,
+    surveyCategory: this.selectedCategory,
+  });
+
+  submitSurvey(): void {
+    console.log(this.surveyForm.value);
+    console.log(this.surveyForm.valid);
   }
 
   createQuestionForm(): FormGroup {
     return new FormGroup({
-      questionText: new FormControl(''),
+      questionText: new FormControl('', Validators.required),
       answers: new FormArray([
-        new FormControl(''),
-        new FormControl(''),
+        new FormControl('', Validators.required),
+        new FormControl('', Validators.required),
       ]),
       multipleAnswers: new FormControl(false)
     });
@@ -50,15 +66,27 @@ export class CreateSurvey {
     }
   }
 
+  removeAnswer(questionIndex: number, answerIndex: number): void {
+    const answerArray = this.getAnswers(questionIndex);
+    if (answerArray.length > 2) {
+      answerArray.removeAt(answerIndex);
+    }
+  }
+
+  removeQuestion(questionIndex: number): void {
+    if (this.questions.length > 1) {
+      this.questions.removeAt(questionIndex)
+    }
+  }
+
   isCategoryDropdownOpen = false;
-  selectedCategory: 'Team Activities' | 'Health & Wellness' | 'Gaming & Entertainment' | 'Education & Learning' | 'Lifestyle & Preferences' | 'Technology & Innovation' | '' = '';
 
   toggleCategoryDropdown(): void {
     this.isCategoryDropdownOpen = !this.isCategoryDropdownOpen
   }
 
-  switchCategory(button: 'Team Activities' | 'Health & Wellness' | 'Gaming & Entertainment' | 'Education & Learning' | 'Lifestyle & Preferences' | 'Technology & Innovation'): void {
-    this.selectedCategory = button;
+  switchCategory(surveyCategory: SurveyCategory): void {
+    this.selectedCategory.setValue(surveyCategory);
     this.isCategoryDropdownOpen = false;
   }
 
