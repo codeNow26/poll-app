@@ -15,6 +15,9 @@
                 <div class="create-survey__field">
                     <label for="survey-name" class="create-survey__label">Survey Name</label>
                     <input type="text" [formControl]="surveyName" id="survey-name" class="create-survey__input">
+                    @if (surveyName.invalid && surveyName.touched) {
+                    <p class="create-survey__error">Please enter a survey name.</p>
+                    }
                 </div>
 
                 <div class="create-survey__details-row">
@@ -30,6 +33,11 @@
                             <img [class.surveys-overview__category-arrow--open]="isCategoryDropdownOpen"
                                 class="surveys-overview__category-arrow" src="icons/arrow_drop_down.svg" alt="">
                         </button>
+
+                        @if (selectedCategory.invalid && selectedCategory.touched) {
+                            <p class="create-survey__error">Please choose a category.</p>
+                        }
+
                         @if ( selectedCategory.value !== '') {
                         <p class="surveys-overview__selected-category">
                             {{ selectedCategory.value }}
@@ -77,6 +85,11 @@
                 <button (click)="removeQuestion(questionIndex)" [disabled]="questions.length <= 1" type="button">Delete
                     Question</button>
 
+                @if (question.get('questionText')?.invalid && question.get('questionText')?.touched) {
+                <p class="create-survey__error">Please enter a question.</p>
+                }
+
+
                 <div class="create-survey__answers">
 
                     <div class="create-survey__answers-header">
@@ -90,12 +103,17 @@
                         @for (answer of getAnswers(questionIndex).controls; track answer; let answerIndex = $index) {
                         <div class="create-survey__answer">
                             <label for="question-{{questionIndex + 1}}-answer-{{answerIndex + 1}}"
-                                class="create-survey__label">{{ letter[answerIndex]}}</label>
+                                class="create-survey__label">{{ answerLabels[answerIndex]}}</label>
                             <input class="create-survey__input" type="text"
                                 id="question-{{questionIndex + 1}}-answer-{{answerIndex + 1}}"
                                 [formControlName]="answerIndex">
                             <button type="button" (click)="removeAnswer(questionIndex, answerIndex)"
                                 [disabled]="getAnswers(questionIndex).length < 2">Delete</button>
+                            @if (answer.invalid && answer.touched) {
+                            <p class="create-survey__error">Please enter an answer.</p>
+                            }
+
+
                         </div>
                         }
                     </div>

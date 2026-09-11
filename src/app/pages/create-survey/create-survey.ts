@@ -18,11 +18,11 @@ type SurveyCategory =
 })
 
 export class CreateSurvey {
-  surveyName = new FormControl('', Validators.required);
+  surveyName = new FormControl('', [Validators.required, Validators.pattern(/\S/)]);
   surveyDescription = new FormControl('');
   surveyDeadline = new FormControl('');
   questions = new FormArray([this.createQuestionForm()]);
-  selectedCategory = new FormControl<SurveyCategory | ''>('');
+  selectedCategory = new FormControl<SurveyCategory | ''>('', Validators.required);
 
   surveyForm = new FormGroup({
     surveyName: this.surveyName,
@@ -33,16 +33,20 @@ export class CreateSurvey {
   });
 
   submitSurvey(): void {
+    if (this.surveyForm.invalid) {
+      this.surveyForm.markAllAsTouched();
+      return;
+    }
     console.log(this.surveyForm.value);
     console.log(this.surveyForm.valid);
   }
 
   createQuestionForm(): FormGroup {
     return new FormGroup({
-      questionText: new FormControl('', Validators.required),
+      questionText: new FormControl('', [Validators.required, Validators.pattern(/\S/)]),
       answers: new FormArray([
-        new FormControl('', Validators.required),
-        new FormControl('', Validators.required),
+        new FormControl('', [Validators.required, Validators.pattern(/\S/)]),
+        new FormControl('', [Validators.required, Validators.pattern(/\S/)]),
       ]),
       multipleAnswers: new FormControl(false)
     });
@@ -62,7 +66,7 @@ export class CreateSurvey {
     const answerArray = this.getAnswers(questionIndex);
 
     if (answerArray.length < 6) {
-      answerArray.push(new FormControl(''));
+      answerArray.push(new FormControl('', [Validators.required, Validators.pattern(/\S/)]));
     }
   }
 
@@ -90,5 +94,5 @@ export class CreateSurvey {
     this.isCategoryDropdownOpen = false;
   }
 
-  letter = ['A', 'B', 'C', 'D', 'E', 'F'];
+  answerLabels = ['A', 'B', 'C', 'D', 'E', 'F'];
 }
