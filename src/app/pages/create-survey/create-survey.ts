@@ -1,6 +1,8 @@
 import { Component } from '@angular/core';
 import { FormControl, ReactiveFormsModule, FormGroup, FormArray, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { Survey } from '../../models/survey.model/survey.model';
+import { SurveyQuestion } from '../../models/survey.model/survey-question.model';
 
 type SurveyCategory =
   | 'Team Activities'
@@ -37,8 +39,16 @@ export class CreateSurvey {
       this.surveyForm.markAllAsTouched();
       return;
     }
-    console.log(this.surveyForm.value);
-    console.log(this.surveyForm.valid);
+    const formValue = this.surveyForm.getRawValue();
+
+    const newSurvey: Survey = {
+      title: formValue.surveyName ?? '',
+      description: formValue.surveyDescription ?? '',
+      category: formValue.surveyCategory ?? '',
+      questions: formValue.questions as SurveyQuestion[],
+      deadline: formValue.surveyDeadline || null,
+    }
+    console.log(newSurvey);
   }
 
   createQuestionForm(): FormGroup {

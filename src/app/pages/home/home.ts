@@ -15,22 +15,46 @@ export class Home implements OnInit {
     {
       category: 'Gaming & Entertainment',
       title: 'wie oft spielst du?',
-      deadline: '2026-09-30',
+      description: "",
+      deadline: null,
+      questions: [{
+        questionText: "Wieviele Tage hat ein Jahr?",
+        answers: ["24", "365"],
+        multipleAnswers: false,
+      }]
     },
     {
       category: 'Team Activities',
       title: 'welche Haustiere hast du?',
+      description: "",
       deadline: '2026-08-15',
+      questions: [{
+        questionText: "Wieviele Tage hat ein Jahr?",
+        answers: ["24", "365"],
+        multipleAnswers: true,
+      }]
     },
     {
       category: 'Technology & Innovation',
       title: 'welche Technologien nutzt du am meisten?',
+      description: "",
       deadline: '2026-09-04',
+      questions: [{
+        questionText: "Wieviele Tage hat ein Jahr?",
+        answers: ["24", "365"],
+        multipleAnswers: true,
+      }]
     },
     {
       category: 'Health & Wellness',
       title: 'wieviele Beziehungen hattest du bereits?',
+      description: "",
       deadline: '2026-09-01',
+      questions: [{
+        questionText: "Wieviele Tage hat ein Jahr?",
+        answers: ["24", "365"],
+        multipleAnswers: true,
+      }]
     },
   ];
 
@@ -58,23 +82,45 @@ export class Home implements OnInit {
     today.setHours(0, 0, 0, 0);
 
     this.activeSurveys = this.surveys.filter((survey) => {
+      if (survey.deadline === null) {
+        return true;
+      }
       const deadline = new Date(survey.deadline);
       return deadline >= today;
     });
 
     this.pastSurveys = this.surveys.filter((survey) => {
+      if (survey.deadline === null) {
+        return false;
+      }
       const deadline = new Date(survey.deadline);
       return deadline < today;
     });
 
-    this.activeSurveys.sort((a, b) => a.deadline.localeCompare(b.deadline));
-    this.endingSoonSurveys = this.activeSurveys.slice(0, 3);
+
+
+
+    this.activeSurveys.sort((a, b) => {
+      if (a.deadline === null && b.deadline === null) {
+        return 0;
+      } if (a.deadline === null) {
+        return 1;
+      } if (b.deadline === null) {
+        return -1;
+      } else {
+        return a.deadline.localeCompare(b.deadline);
+      }
+    });
+
+    const surveysWithDeadline = this.activeSurveys.filter((survey) => {
+      return survey.deadline !== null;
+    });
+    this.endingSoonSurveys = surveysWithDeadline.slice(0, 3);
   }
 
   toggleCategoryDropdown(): void {
     this.isCategoryDropdownOpen = !this.isCategoryDropdownOpen
   }
-
 
   getVisibleSurveys(): Survey[] {
     const surveysToFilter =
@@ -88,7 +134,3 @@ export class Home implements OnInit {
     );
   }
 }
-
-
-
-
