@@ -1,7 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { SurveyCard } from '../../components/survey-card/survey-card';
 import { Survey } from '../../models/survey.model/survey.model';
 import { RouterLink } from '@angular/router';
+import { Supabase } from '../../services/supabase';
 
 @Component({
   selector: 'app-home',
@@ -11,53 +12,9 @@ import { RouterLink } from '@angular/router';
 })
 
 export class Home implements OnInit {
-  surveys: Survey[] = [
-    {
-      category: 'Gaming & Entertainment',
-      title: 'wie oft spielst du?',
-      description: "",
-      deadline: null,
-      questions: [{
-        questionText: "Wieviele Tage hat ein Jahr?",
-        answers: ["24", "365"],
-        multipleAnswers: false,
-      }]
-    },
-    {
-      category: 'Team Activities',
-      title: 'welche Haustiere hast du?',
-      description: "",
-      deadline: '2026-08-15',
-      questions: [{
-        questionText: "Wieviele Tage hat ein Jahr?",
-        answers: ["24", "365"],
-        multipleAnswers: true,
-      }]
-    },
-    {
-      category: 'Technology & Innovation',
-      title: 'welche Technologien nutzt du am meisten?',
-      description: "",
-      deadline: '2026-09-04',
-      questions: [{
-        questionText: "Wieviele Tage hat ein Jahr?",
-        answers: ["24", "365"],
-        multipleAnswers: true,
-      }]
-    },
-    {
-      category: 'Health & Wellness',
-      title: 'wieviele Beziehungen hattest du bereits?',
-      description: "",
-      deadline: '2026-09-01',
-      questions: [{
-        questionText: "Wieviele Tage hat ein Jahr?",
-        answers: ["24", "365"],
-        multipleAnswers: true,
-      }]
-    },
-  ];
+  surveys: Survey[] = [];
 
+  supabase = inject(Supabase)
   endingSoonSurveys: Survey[] = []
   activeSurveys: Survey[] = [];
   pastSurveys: Survey[] = [];
@@ -76,7 +33,15 @@ export class Home implements OnInit {
     this.isCategoryDropdownOpen = false;
   }
 
-  ngOnInit(): void {
+  async ngOnInit(): Promise<void> {
+
+
+    try {
+      this.surveys = await this.supabase.loadSurveys();
+    } catch (error) {
+      console.error('Umfragen konnten nicht geladen werden:', error);
+      return;
+    }
 
     const today = new Date();
     today.setHours(0, 0, 0, 0);

@@ -1,8 +1,9 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { FormControl, ReactiveFormsModule, FormGroup, FormArray, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { Survey } from '../../models/survey.model/survey.model';
 import { SurveyQuestion } from '../../models/survey.model/survey-question.model';
+import { Supabase } from '../../services/supabase';
 
 type SurveyCategory =
   | 'Team Activities'
@@ -25,6 +26,7 @@ export class CreateSurvey {
   surveyDeadline = new FormControl('');
   questions = new FormArray([this.createQuestionForm()]);
   selectedCategory = new FormControl<SurveyCategory | ''>('', Validators.required);
+  supabase = inject(Supabase);
 
   surveyForm = new FormGroup({
     surveyName: this.surveyName,
@@ -48,7 +50,7 @@ export class CreateSurvey {
       questions: formValue.questions as SurveyQuestion[],
       deadline: formValue.surveyDeadline || null,
     }
-    console.log(newSurvey);
+   this.supabase.saveSurvey(newSurvey);
   }
 
   createQuestionForm(): FormGroup {
