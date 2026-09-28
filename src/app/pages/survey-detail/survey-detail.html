@@ -1,0 +1,34 @@
+@if (survey(); as loadedSurvey ) {
+<h1>{{ loadedSurvey.title }}</h1>
+<p>{{ loadedSurvey.description }}</p>
+<p>{{ loadedSurvey.category }}</p>
+@if (loadedSurvey.deadline !== null) {
+<p>{{ loadedSurvey.deadline }}</p>
+}
+
+@for (question of loadedSurvey.questions; track $index; let questionIndex = $index) {
+<h2> {{ question.questionText }}</h2>
+@if (question.multipleAnswers === true) {
+<p>You can select multiple Answers</p>
+} @else {
+<p>Please select one answer</p>
+}
+
+@for (answer of question.answers; track $index; let answerIndex = $index) {
+
+
+@if (question.multipleAnswers === true) {
+<label>
+    <input #answerInput (change)="selectAnswer(questionIndex, answerIndex, answerInput.checked)" type="checkbox">
+    {{answer}}
+</label>
+} @else { <label>
+    <input #answerInput (change)="selectAnswer(questionIndex, answerIndex, answerInput.checked)" [name]="'question-' + questionIndex" type="radio">
+    {{ answer }}
+</label>
+}
+}
+}
+} @else {
+<p>Noch keine Umfrage angezeigt.</p>
+}

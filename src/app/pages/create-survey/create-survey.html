@@ -35,7 +35,7 @@
                         </button>
 
                         @if (selectedCategory.invalid && selectedCategory.touched) {
-                            <p class="create-survey__error">Please choose a category.</p>
+                        <p class="create-survey__error">Please choose a category.</p>
                         }
 
                         @if ( selectedCategory.value !== '') {
@@ -138,4 +138,10 @@
 
         <button type="button" (ngSubmit)="submitSurvey()">Test</button>
     </form>
+
+    @if (isSuccessOverlayOpen) {
+        <div class="create-survey__success-overlay">Your survey is now published
+        <button (click)="closeSuccessOverlay()" aria-label="View published survey" type="button">X</button>
+        </div>
+    }
 </main>

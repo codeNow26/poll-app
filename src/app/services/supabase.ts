@@ -12,7 +12,7 @@ export class Supabase {
     'sb_publishable_qBy7OtYkvPX6WKcaOkgJ_g_AsvObfxz'
   );
 
-  async saveSurvey(survey: Survey): Promise<void> {
+  async saveSurvey(survey: Survey): Promise<number> {
     const surveyData = {
       title: survey.title,
       description: survey.description,
@@ -27,7 +27,7 @@ export class Supabase {
 
     if (error) {
       console.error('Speichern fehlgeschlagen:', error);
-      return;
+     throw error;
     }
 
     const questionsData = survey.questions.map((question: SurveyQuestion) => {
@@ -44,14 +44,13 @@ export class Supabase {
 
     if (questionsResult.error) {
       console.error('Frage Speichern fehlgeschlagen:', questionsResult.error);
-      return;
+      throw questionsResult.error;
     } else {
       console.log("Umfrage und Fragen gespeichert");
     }
-
-
     console.log('Gespeicherte Umfrage:', data);
     console.log(questionsData);
+    return data.id
   }
 
   async loadSurveys(): Promise<Survey[]> {
@@ -65,4 +64,18 @@ export class Supabase {
       return data;
     }
   }
+
+ async loadSurvey(surveyId: number): Promise<Survey> {
+ const { data, error } = await this.client
+      .from('surveys')
+      .select('*, questions(*)')
+      .eq('id', surveyId)
+      .single()
+
+       if (error) {
+      throw error;
+    } else {
+      return data;
+    }
+ }
 }

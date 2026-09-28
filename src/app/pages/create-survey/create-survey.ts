@@ -1,6 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { FormControl, ReactiveFormsModule, FormGroup, FormArray, Validators } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { RouterLink, Router } from '@angular/router';
 import { Survey } from '../../models/survey.model/survey.model';
 import { SurveyQuestion } from '../../models/survey.model/survey-question.model';
 import { Supabase } from '../../services/supabase';
@@ -27,6 +27,7 @@ export class CreateSurvey {
   questions = new FormArray([this.createQuestionForm()]);
   selectedCategory = new FormControl<SurveyCategory | ''>('', Validators.required);
   supabase = inject(Supabase);
+  router = inject(Router);
 
   surveyForm = new FormGroup({
     surveyName: this.surveyName,
@@ -36,7 +37,7 @@ export class CreateSurvey {
     surveyCategory: this.selectedCategory,
   });
 
-  submitSurvey(): void {
+  async submitSurvey(): Promise<void> {
     if (this.surveyForm.invalid) {
       this.surveyForm.markAllAsTouched();
       return;
@@ -50,7 +51,27 @@ export class CreateSurvey {
       questions: formValue.questions as SurveyQuestion[],
       deadline: formValue.surveyDeadline || null,
     }
-   this.supabase.saveSurvey(newSurvey);
+    try {
+      const surveyId = await this.supabase.saveSurvey(newSurvey);
+      this.createdSurveyId = surveyId;
+      this.isSuccessOverlayOpen = true;
+      console.log(surveyId)
+    } catch (error) {
+      console.error('Umfragen konnten nicht gespeichert werden:', error);
+      return;
+    }
+  }
+
+  createdSurveyId: number | null = null;
+  isSuccessOverlayOpen = false;
+
+  closeSuccessOverlay() {
+    if (this.createdSurveyId === null) {
+      return;
+    } else {
+      this.router.navigate(['/survey', this.createdSurveyId]);
+    }
+    console.log(this.createdSurveyId)
   }
 
   createQuestionForm(): FormGroup {
