@@ -3,3 +3,7 @@ export interface SurveyQuestion {
   answers: string[];
   multipleAnswers: boolean;
 }
+
+export interface SavedSurveyQuestion extends SurveyQuestion {
+  id: number;
+}

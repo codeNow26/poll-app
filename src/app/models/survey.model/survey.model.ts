@@ -1,4 +1,4 @@
-import { SurveyQuestion } from "./survey-question.model";
+import { SurveyQuestion, SavedSurveyQuestion } from "./survey-question.model";
 
 export interface Survey {
   category: string;
@@ -6,4 +6,9 @@ export interface Survey {
   title: string;
   deadline: string | null;
   questions: SurveyQuestion[];
+}
+
+export interface SavedSurvey extends Survey {
+  id: number;
+  questions: SavedSurveyQuestion[];
 }

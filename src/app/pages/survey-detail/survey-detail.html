@@ -14,6 +14,13 @@
 <p>Please select one answer</p>
 }
 
+
+<button (click)="submitAnswers()" type="button">Complete survey</button>
+
+ @if (showAnswerError) {
+        <p>Please answer every question</p>
+    } 
+
 @for (answer of question.answers; track $index; let answerIndex = $index) {
 
 
@@ -23,7 +30,8 @@
     {{answer}}
 </label>
 } @else { <label>
-    <input #answerInput (change)="selectAnswer(questionIndex, answerIndex, answerInput.checked)" [name]="'question-' + questionIndex" type="radio">
+    <input #answerInput (change)="selectAnswer(questionIndex, answerIndex, answerInput.checked)"
+        [name]="'question-' + questionIndex" type="radio">
     {{ answer }}
 </label>
 }

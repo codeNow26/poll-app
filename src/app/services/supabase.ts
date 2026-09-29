@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
 import { createClient } from '@supabase/supabase-js';
-import { Survey } from '../models/survey.model/survey.model';
+import { Survey, SavedSurvey } from '../models/survey.model/survey.model';
 import { SurveyQuestion } from '../models/survey.model/survey-question.model';
+import { SurveyVote } from '../models/survey-vote.model';
 
 @Injectable({
   providedIn: 'root',
@@ -27,7 +28,7 @@ export class Supabase {
 
     if (error) {
       console.error('Speichern fehlgeschlagen:', error);
-     throw error;
+      throw error;
     }
 
     const questionsData = survey.questions.map((question: SurveyQuestion) => {
@@ -65,17 +66,27 @@ export class Supabase {
     }
   }
 
- async loadSurvey(surveyId: number): Promise<Survey> {
- const { data, error } = await this.client
+  async loadSurvey(surveyId: number): Promise<SavedSurvey> {
+    const { data, error } = await this.client
       .from('surveys')
       .select('*, questions(*)')
       .eq('id', surveyId)
       .single()
 
-       if (error) {
+    if (error) {
       throw error;
     } else {
       return data;
     }
- }
+  }
+
+  async saveVotes(votes: SurveyVote[]): Promise<void> {
+    const { error } = await this.client
+      .from('survey_votes')
+      .insert(votes)
+
+    if (error) {
+      throw error;
+    }
+  }
 }

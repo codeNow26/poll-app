@@ -1,7 +1,8 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Supabase } from '../../services/supabase';
-import { Survey } from '../../models/survey.model/survey.model';
+import { SavedSurvey, Survey } from '../../models/survey.model/survey.model';
+import { SurveyVote } from '../../models/survey-vote.model';
 
 
 @Component({
@@ -42,8 +43,9 @@ export class SurveyDetail implements OnInit {
     }
   }
 
-  survey = signal<Survey | null>(null);
+  survey = signal<SavedSurvey | null>(null);
   selectedAnswers: number[][] = [];
+  showAnswerError = false;
 
   selectAnswer(questionIndex: number, answerIndex: number, isChecked: boolean) {
     const currentSurvey = this.survey();
@@ -52,15 +54,53 @@ export class SurveyDetail implements OnInit {
       return;
     }
 
-    if ( currentSurvey.questions[questionIndex].multipleAnswers === false ) {
+    if (currentSurvey.questions[questionIndex].multipleAnswers === false) {
       this.selectedAnswers[questionIndex] = [answerIndex];
+    } else if (isChecked) {
+      this.selectedAnswers[questionIndex].push(answerIndex)
+    } else {
+      this.selectedAnswers[questionIndex] = this.selectedAnswers[questionIndex].filter((selectedIndex) => selectedIndex !== answerIndex);
     }
 
     console.log(this.selectedAnswers);
-  
+
     console.log(isChecked);
     console.log(questionIndex)
     console.log(answerIndex)
   }
 
+  submitAnswers(): void {
+    this.showAnswerError = false;
+
+    const currentSurvey = this.survey();
+
+    if (currentSurvey === null) {
+      return;
+    }
+
+    const hasUnansweredQuestion = this.selectedAnswers.some(
+      (answers) => answers.length === 0
+    );
+
+    if (hasUnansweredQuestion) {
+      this.showAnswerError = true;
+      return;
+    }
+
+    console.log('Geladene Fragen:', currentSurvey.questions);
+    console.log('Deine Auswahl:', this.selectedAnswers);
+
+    const votes: SurveyVote[] = currentSurvey.questions.map((question, questionIndex) => {
+      const firstVote = {
+        question_id: question.id,
+        answer_indices: this.selectedAnswers[questionIndex]
+      }
+      return firstVote;
+    });
+
+    console.log(votes);
+
+  }
 }
+
+
