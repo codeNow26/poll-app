@@ -89,4 +89,19 @@ export class Supabase {
       throw error;
     }
   }
+
+  async loadVotes(questionIds: number[]): Promise<SurveyVote[]> {
+    const { data, error} = await this.client
+      .from('survey_votes')
+      .select('*')
+      .in('question_id', questionIds)
+      
+
+       if (error) {
+      throw error;
+    } else {
+      return data;
+    }
+}
+
 }

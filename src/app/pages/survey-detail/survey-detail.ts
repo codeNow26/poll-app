@@ -46,8 +46,15 @@ export class SurveyDetail implements OnInit {
   survey = signal<SavedSurvey | null>(null);
   selectedAnswers: number[][] = [];
   showAnswerError = false;
+  showSaveError = signal(false);
+  isSaving = signal(false);
+  hasVoted = signal(false);
 
   selectAnswer(questionIndex: number, answerIndex: number, isChecked: boolean) {
+  if (this.isSaving() === true || this.hasVoted() === true) {
+      return;
+    }
+
     const currentSurvey = this.survey();
 
     if (currentSurvey === null) {
@@ -63,15 +70,18 @@ export class SurveyDetail implements OnInit {
     }
 
     console.log(this.selectedAnswers);
-
     console.log(isChecked);
     console.log(questionIndex)
     console.log(answerIndex)
   }
 
-  submitAnswers(): void {
-    this.showAnswerError = false;
+  async submitAnswers(): Promise<void> {
+    if (this.isSaving() === true || this.hasVoted() === true) {
+      return;
+    }
 
+    this.showSaveError.set(false);
+    this.showAnswerError = false;
     const currentSurvey = this.survey();
 
     if (currentSurvey === null) {
@@ -88,7 +98,7 @@ export class SurveyDetail implements OnInit {
     }
 
     console.log('Geladene Fragen:', currentSurvey.questions);
-    console.log('Deine Auswahl:', this.selectedAnswers);
+    console.log('Deine ausgewählten Antworten:', this.selectedAnswers);
 
     const votes: SurveyVote[] = currentSurvey.questions.map((question, questionIndex) => {
       const firstVote = {
@@ -97,9 +107,18 @@ export class SurveyDetail implements OnInit {
       }
       return firstVote;
     });
-
-    console.log(votes);
-
+    this.isSaving.set(true);
+    try {
+      await this.supabase.saveVotes(votes)
+        this.hasVoted.set(true);
+      console.log("Stimmen gespeichert");
+    } catch (error) {
+      this.showSaveError.set(true);
+      console.error("Stimmen konnten nicht gespeichert werden", error);
+    } finally {
+      this.isSaving.set(false);
+      console.log(votes);
+    }
   }
 }
 

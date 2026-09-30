@@ -14,24 +14,37 @@
 <p>Please select one answer</p>
 }
 
+<button (click)="submitAnswers()" [disabled]="isSaving() || hasVoted()" type="button">
+    @if (isSaving()) {
+    Saving
+    } @else if (hasVoted()) {
+    Thank you for voting!
+    } @else {
+    Complete survey
+    }
+</button>
+@if (showSaveError()) {
+<p>Your vote could not be saved. Please try again.</p>
+}
 
-<button (click)="submitAnswers()" type="button">Complete survey</button>
 
- @if (showAnswerError) {
-        <p>Please answer every question</p>
-    } 
+@if (showAnswerError) {
+<p>Please answer every question</p>
+}
 
 @for (answer of question.answers; track $index; let answerIndex = $index) {
 
 
 @if (question.multipleAnswers === true) {
 <label>
-    <input #answerInput (change)="selectAnswer(questionIndex, answerIndex, answerInput.checked)" type="checkbox">
+    <input #answerInput [disabled]="isSaving() || hasVoted()"
+        (change)="selectAnswer(questionIndex, answerIndex, answerInput.checked)" type="checkbox">
     {{answer}}
 </label>
 } @else { <label>
-    <input #answerInput (change)="selectAnswer(questionIndex, answerIndex, answerInput.checked)"
-        [name]="'question-' + questionIndex" type="radio">
+    <input #answerInput [disabled]="isSaving() || hasVoted()"
+        (change)="selectAnswer(questionIndex, answerIndex, answerInput.checked)" [name]="'question-' + questionIndex"
+        type="radio">
     {{ answer }}
 </label>
 }
