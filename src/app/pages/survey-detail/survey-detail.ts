@@ -33,6 +33,19 @@ export class SurveyDetail implements OnInit {
     try {
       const survey = await this.supabase.loadSurvey(numericSurveyId);
       this.survey.set(survey);
+
+      const questionIds: number[] = survey.questions.map((question) => {
+        return question.id;
+      });
+
+      console.log(questionIds);
+
+      const loadedVotes = await this.supabase.loadVotes(questionIds)
+      console.log(loadedVotes);
+
+      this.savedVotes.set(loadedVotes);
+      console.log(this.savedVotes());
+
       this.selectedAnswers = survey.questions.map(() => {
         return [];
       });
@@ -49,9 +62,10 @@ export class SurveyDetail implements OnInit {
   showSaveError = signal(false);
   isSaving = signal(false);
   hasVoted = signal(false);
+  savedVotes = signal<SurveyVote[]>([]);
 
   selectAnswer(questionIndex: number, answerIndex: number, isChecked: boolean) {
-  if (this.isSaving() === true || this.hasVoted() === true) {
+    if (this.isSaving() === true || this.hasVoted() === true) {
       return;
     }
 
@@ -110,7 +124,7 @@ export class SurveyDetail implements OnInit {
     this.isSaving.set(true);
     try {
       await this.supabase.saveVotes(votes)
-        this.hasVoted.set(true);
+      this.hasVoted.set(true);
       console.log("Stimmen gespeichert");
     } catch (error) {
       this.showSaveError.set(true);
@@ -119,6 +133,16 @@ export class SurveyDetail implements OnInit {
       this.isSaving.set(false);
       console.log(votes);
     }
+  }
+
+  getAnswerVoteCount(questionId: number, answerIndex: number): number {
+    let count = 0;
+    for (const vote of this.savedVotes()) {
+      if (vote.question_id === questionId && vote.answer_indices.includes(answerIndex)) {
+        count++;
+      }
+    }
+    return count;
   }
 }
 
