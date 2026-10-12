@@ -5,4 +5,18 @@
 
 body {
   margin: 0;
+  font-family: 'Mulish', sans-serif;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+h1,
+h2 {
+  font-family: 'Nerko One', cursive;
+  font-weight: 400;
 }

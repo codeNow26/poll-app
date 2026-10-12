@@ -1,57 +1,92 @@
-@if (survey(); as loadedSurvey ) {
-<h1>{{ loadedSurvey.title }}</h1>
-<p>{{ loadedSurvey.description }}</p>
-<p>{{ loadedSurvey.category }}</p>
-@if (loadedSurvey.deadline !== null) {
-<p>{{ loadedSurvey.deadline }}</p>
-}
+@if (survey(); as loadedSurvey) {
+  <h1>{{ loadedSurvey.title }}</h1>
+  <p>{{ loadedSurvey.description }}</p>
+  <p>{{ loadedSurvey.category }}</p>
 
-@for (question of loadedSurvey.questions; track $index; let questionIndex = $index) {
-<h2> {{ question.questionText }}</h2>
-@if (question.multipleAnswers === true) {
-<p>You can select multiple Answers</p>
-} @else {
-<p>Please select one answer</p>
-}
+  @if (loadedSurvey.deadline !== null) {
+    <p>{{ loadedSurvey.deadline }}</p>
+  }
 
-<button (click)="submitAnswers()" [disabled]="isSaving() || hasVoted()" type="button">
-    @if (isSaving()) {
-    Saving
-    } @else if (hasVoted()) {
-    Thank you for voting!
+  @for (question of loadedSurvey.questions; track question.id; let questionIndex = $index) {
+    <h2>{{ question.questionText }}</h2>
+
+    @if (question.multipleAnswers) {
+      <p>You can select multiple answers</p>
     } @else {
-    Complete survey
+      <p>Please select one answer</p>
     }
-</button>
-@if (showSaveError()) {
-<p>Your vote could not be saved. Please try again.</p>
-}
 
-@if (showAnswerError) {
-<p>Please answer every question</p>
-}
+    @if (getQuestionVoteCount(question.id) === 0) {
+      <p>No votes yet</p>
+    }
 
-@for (answer of question.answers; track $index; let answerIndex = $index) {
+    @for (answer of question.answers; track $index; let answerIndex = $index) {
+      <div>
+        @if (question.multipleAnswers) {
+          <label>
+            <input
+              #answerInput
+              type="checkbox"
+              [disabled]="isSaving() || hasVoted() || isSurveyExpired()"
+              (change)="selectAnswer(questionIndex, answerIndex, answerInput.checked)"
+            >
+            {{ answer }}
+          </label>
+        } @else {
+          <label>
+            <input
+              #answerInput
+              type="radio"
+              [name]="'question-' + questionIndex"
+              [disabled]="isSaving() || hasVoted() || isSurveyExpired()"
+              (change)="selectAnswer(questionIndex, answerIndex, answerInput.checked)"
+            >
+            {{ answer }}
+          </label>
+        }
 
+        @if (getQuestionVoteCount(question.id) > 0) {
+          <p>
+            {{ getAnswerVoteCount(question.id, answerIndex) }} votes ·
+            {{ getAnswerPercentage(question.id, answerIndex) }}%
+          </p>
 
-@if (question.multipleAnswers === true) {
-<label>
-    <input #answerInput [disabled]="isSaving() || hasVoted()"
-        (change)="selectAnswer(questionIndex, answerIndex, answerInput.checked)" type="checkbox">
-    {{answer}}
-</label>
-} @else { <label>
-    <input #answerInput [disabled]="isSaving() || hasVoted()"
-        (change)="selectAnswer(questionIndex, answerIndex, answerInput.checked)" [name]="'question-' + questionIndex"
-        type="radio">
-    {{ answer }}
-</label>
-}
+          <meter
+            [attr.aria-label]="'Vote percentage for ' + answer"
+            [value]="getAnswerPercentage(question.id, answerIndex)"
+            min="0"
+            max="100"
+          ></meter>
+        }
+      </div>
+    }
+  }
 
-<p >{{getAnswerVoteCount(question.id, answerIndex)}} Stimmen</p>
+  @if (isSurveyExpired()) {
+    <p>This survey has ended.</p>
+  }
 
-}
-}
+  <button
+    type="button"
+    (click)="submitAnswers()"
+    [disabled]="isSaving() || hasVoted() || isSurveyExpired()"
+  >
+    @if (isSaving()) {
+      Saving…
+    } @else if (hasVoted()) {
+      Thank you for voting!
+    } @else {
+      Complete survey
+    }
+  </button>
+
+  @if (showSaveError()) {
+    <p>Your vote could not be saved. Please try again.</p>
+  }
+
+  @if (showAnswerError) {
+    <p>Please answer every question.</p>
+  }
 } @else {
-<p>Noch keine Umfrage angezeigt.</p>
+  <p>Noch keine Umfrage angezeigt.</p>
 }

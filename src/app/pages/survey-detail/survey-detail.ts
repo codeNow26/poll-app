@@ -20,6 +20,7 @@ export class SurveyDetail implements OnInit {
 
     const surveyId = this.route.snapshot.paramMap.get('id');
 
+
     if (surveyId === null) {
       return;
     }
@@ -31,7 +32,18 @@ export class SurveyDetail implements OnInit {
     }
 
     try {
+       this.hasVoted.set(localStorage.getItem('voted-survey-' + numericSurveyId) === 'true');
+    } catch (error) {
+      console.error('Fehler beim Abrufen des Stimmenstatus:', error);
+    }
+
+    try {
       const survey = await this.supabase.loadSurvey(numericSurveyId);
+
+      this.selectedAnswers = survey.questions.map(() => {
+        return [];
+      });
+
       this.survey.set(survey);
 
       const questionIds: number[] = survey.questions.map((question) => {
@@ -39,16 +51,10 @@ export class SurveyDetail implements OnInit {
       });
 
       console.log(questionIds);
-
       const loadedVotes = await this.supabase.loadVotes(questionIds)
       console.log(loadedVotes);
-
       this.savedVotes.set(loadedVotes);
       console.log(this.savedVotes());
-
-      this.selectedAnswers = survey.questions.map(() => {
-        return [];
-      });
       console.log(this.selectedAnswers);
       console.log(survey);
     } catch (error) {
@@ -65,7 +71,7 @@ export class SurveyDetail implements OnInit {
   savedVotes = signal<SurveyVote[]>([]);
 
   selectAnswer(questionIndex: number, answerIndex: number, isChecked: boolean) {
-    if (this.isSaving() === true || this.hasVoted() === true) {
+    if (this.isSaving() === true || this.hasVoted() === true || this.isSurveyExpired() === true) {
       return;
     }
 
@@ -90,7 +96,8 @@ export class SurveyDetail implements OnInit {
   }
 
   async submitAnswers(): Promise<void> {
-    if (this.isSaving() === true || this.hasVoted() === true) {
+
+    if (this.isSaving() === true || this.hasVoted() === true || this.isSurveyExpired() === true) {
       return;
     }
 
@@ -129,9 +136,26 @@ export class SurveyDetail implements OnInit {
     } catch (error) {
       this.showSaveError.set(true);
       console.error("Stimmen konnten nicht gespeichert werden", error);
+      return;
     } finally {
       this.isSaving.set(false);
       console.log(votes);
+    }
+
+     try {
+      localStorage.setItem('voted-survey-' + currentSurvey.id, 'true');
+    } catch (error) {
+      console.error('Fehler beim Speichern des Stimmenstatus:', error);
+    }
+
+    try {
+      const loadedVotes = await this.supabase.loadVotes(currentSurvey.questions.map((question) => question.id));
+      console.log(loadedVotes);
+
+      this.savedVotes.set(loadedVotes);
+    } catch (error) {
+      console.error('Stimmen wurden gespeichert, aber Ergebnisse konnten nicht aktualisiert werden', error);
+      return;
     }
   }
 
@@ -144,6 +168,42 @@ export class SurveyDetail implements OnInit {
     }
     return count;
   }
+
+  isSurveyExpired(): boolean {
+    const currentSurvey = this.survey();
+    if (currentSurvey === null) {
+      return false;
+    }
+
+    if (currentSurvey.deadline === null) {
+      return false;
+    }
+
+    const currentDate = new Date();
+    currentDate.setHours(0, 0, 0, 0);
+    const deadline = new Date(currentSurvey.deadline + 'T00:00:00');
+
+    return currentDate > deadline;
+  }
+
+  getQuestionVoteCount(questionId: number): number {
+    let count = 0;
+    for (const vote of this.savedVotes()) {
+      if (vote.question_id === questionId) {
+        count++;
+      }
+    }
+    return count;
+  }
+
+  getAnswerPercentage(questionId: number, answerIndex: number): number {
+    const totalVotes = this.getQuestionVoteCount(questionId);
+    if (totalVotes === 0) {
+      return 0;
+    }
+
+    const answerVotes = this.getAnswerVoteCount(questionId, answerIndex);
+    const totalPercentage = answerVotes / totalVotes * 100;
+    return Math.round(totalPercentage)
+  }
 }
-
-

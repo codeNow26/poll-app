@@ -9,4 +9,5 @@ import { Survey } from '../../models/survey.model/survey.model';
 })
 export class SurveyCard {
   survey = input.required<Survey>();
+  variant = input<'featured' | 'compact'>('compact');
 }

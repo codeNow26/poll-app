@@ -1,55 +1,268 @@
-@use '../../../styles/mixin' as mixins;
 
 :host {
     display: block;
     min-height: 100vh;
-    background-color: #35273A;
+    background-color: #35273a;
 }
 
 .text-primary {
-    color: #FFB770;
+    color: #ffb770;
+}
+
+.header {
+    padding-block: 32px;
+
+    &__brand {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: #ffb770;
+        text-decoration: none;
+    }
+
+    &__logo {
+        display: block;
+        width: 64px;
+        height: auto;
+    }
+
+    &__name {
+        font-family: 'Nerko One', cursive;
+        font-size: 26px;
+        font-weight: 400;
+        line-height: 0.9;
+    }
 }
 
 .header,
 .home {
     width: 100%;
     max-width: 1200px;
-    margin: 0 auto;
+    margin-inline: auto;
     padding-inline: 32px;
 }
 
-.hero-content {
-    @include mixins.display-flex(row, center, center);
+.hero {
+    padding-block: 64px;
 }
 
-.surveys {
-    &__cards {
-        @include mixins.display-flex(row, flex-start, center);
+.hero-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 48px;
+}
+
+.hero-left {
+    flex: 1;
+    min-width: 0;
+    max-width: 600px;
+    color: #fff;
+
+    &__title {
+        margin: 0 0 24px;
+        font-size: 80px;
+        font-weight: 400;
+        line-height: 1.1;
+    }
+
+    &__description {
+        max-width: 520px;
+        margin: 0 0 32px;
+        font-size: 18px;
+        line-height: 1.5;
+    }
+
+    &__button {
+        padding: 12px 20px;
+        border: none;
+        border-radius: 8px;
+        background-color: #ffd0a1;
+        color: #35273a;
+        font-family: inherit;
+        font-size: 16px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: background-color 180ms ease;
+
+        &:hover {
+            background-color: #ffb770;
+        }
+
+        &:focus-visible {
+            outline: 3px solid #fff;
+            outline-offset: 4px;
+        }
     }
 }
 
+.hero-right {
+    flex: 0 1 420px;
+    min-width: 0;
+
+    &__img {
+        display: block;
+        width: 100%;
+        height: auto;
+    }
+}
+
+.survey-section {
+    max-width: 1000px;
+    margin-inline: auto;
+    padding-bottom: 80px;
+    color: #fff;
+
+    &__title {
+        margin: 0 0 48px;
+        text-align: center;
+        font-size: 56px;
+        font-weight: 400;
+        line-height: 1.1;
+    }
+}
+
+.surveys__title {
+    margin: 0 0 24px;
+    font-size: 24px;
+    font-weight: 400;
+}
+
+.surveys__cards {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 24px;
+    margin-bottom: 48px;
+}
+
+.surveys-overview__list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px;
+    margin-top: 24px;
+}
+
 .surveys-overview {
+    &__controls {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+
+    &__tabs {
+        display: flex;
+        gap: 16px;
+    }
 
     &__tab {
+        padding: 4px 12px;
+        border: none;
+        border-radius: 20px;
+        background-color: #f2edf5;
+        color: #35273a;
+        font-size: 12px;
+        cursor: pointer;
 
         &--selected {
-            background-color: red;
+            background-color: #ffb770;
         }
     }
 
     &__category-button {
-
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 4px 0;
+        border: none;
+        background: transparent;
+        color: #fff;
+        font-size: 12px;
+        cursor: pointer;
 
         &--selected {
-            background-color: yellow;
-
+            color: #ffb770;
         }
     }
 
     &__category-arrow {
+        width: 20px;
+        height: 20px;
+        transition: transform 180ms ease;
 
         &--open {
             transform: rotate(180deg);
         }
+    }
+
+    &__list {
+        gap: 12px 16px;
+    }
+
+    &__tab:focus-visible,
+    &__category-button:focus-visible {
+        outline: 2px solid #ffb770;
+        outline-offset: 4px;
+    }
+}
+
+@media (max-width: 900px) {
+    .surveys__cards {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+        .hero-left__title {
+        font-size: 60px;
+    }
+
+    .hero-content {
+        gap: 32px;
+    }
+
+    .hero-right {
+        flex-basis: 320px;
+    }
+}
+
+@media (max-width: 700px) {
+    .hero {
+        padding-block: 40px;
+    }
+
+    .hero-content {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 40px;
+    }
+
+    .hero-left {
+        max-width: 100%;
+
+        &__title {
+            font-size: 48px;
+        }
+
+        &__description {
+            font-size: 16px;
+        }
+    }
+
+    .hero-right {
+        flex: none;
+        width: 100%;
+        max-width: 320px;
+        align-self: center;
+    }
+
+       .survey-section__title {
+        margin-bottom: 32px;
+        font-size: 40px;
+    }
+}
+
+@media (max-width: 600px) {
+    .surveys__cards,
+    .surveys-overview__list {
+        grid-template-columns: 1fr;
     }
 }

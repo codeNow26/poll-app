@@ -1,0 +1,44 @@
+:host {
+    display: block;
+    min-width: 0;
+}
+
+.survey-card {
+    min-height: 128px;
+    padding: 16px;
+    border-radius: 0 40px 0 0;
+
+    &__category {
+        margin-bottom: 8px;
+    }
+
+    &__title {
+        margin-bottom: 16px;
+        font-size: 18px;
+    }
+
+    &__deadline {
+        padding: 3px 6px;
+        background-color: #ffd0a1;
+        color: #35273a;
+        border-radius: 2px;
+    }
+
+    &--featured {
+        min-height: 280px;
+        padding: 32px;
+        border-top-right-radius: 72px;
+
+        .survey-card__category {
+            color: #35273a;
+        }
+
+        .survey-card__deadline {
+            align-self: flex-start;
+            padding: 6px 10px;
+            border-radius: 4px;
+            background-color: #ffd0a1;
+            color: #35273a;
+        }
+    }
+}

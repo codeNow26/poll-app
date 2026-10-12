@@ -1,8 +1,12 @@
 <header class="header">
-    <div>
-        <img>
-        <p></p>
-    </div>
+    <a class="header__brand" routerLink="/" aria-label="Poll App home">
+        <img
+            class="header__logo"
+            src="assets/icons/hero-logo.svg"
+            alt=""
+        >
+        <span class="header__name">Poll<br>App</span>
+    </a>
 </header>
 
 <main class="home">
@@ -17,19 +21,20 @@
             </div>
 
             <div class="hero-right">
-                <img class="hero-right__img">
+                <img src="assets/images/hero-img.png" alt="Hero Image" class="hero-right__img">
             </div>
         </div>
     </section>
 
-    <section>
-        <h2 class="text-primary">Your Surveys</h2>
+    <section class="survey-section">
+    <h2 class="survey-section__title text-primary">Your surveys</h2>
 
         <div class="surveys">
             <h3 class="surveys__title">Ending soon surveys</h3>
             <div class="surveys__cards">
                 @for (item of endingSoonSurveys; track item.title) {
                 <app-survey-card [survey]="item" />
+                <app-survey-card [survey]="item" variant="featured" />
                 }
             </div>
         </div>
