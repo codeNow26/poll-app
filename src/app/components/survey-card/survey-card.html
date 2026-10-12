@@ -2,13 +2,17 @@
     class="survey-card"
     [class.survey-card--featured]="variant() === 'featured'"
 >
-    <p class="survey-card__category">{{ survey().category }}</p>
+    <p class="survey-card__category">
+        {{ survey().category }}
+    </p>
 
-    <h3 class="survey-card__title">{{ survey().title }}</h3>
+    <h3 class="survey-card__title">
+        {{ survey().title }}
+    </h3>
 
     @if (survey().deadline !== null) {
         <p class="survey-card__deadline">
-            Ends on {{ survey().deadline }}
+            {{ getDeadlineLabel() }}
         </p>
     }
 </article>
