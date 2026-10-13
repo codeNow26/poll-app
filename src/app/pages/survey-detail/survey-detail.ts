@@ -1,19 +1,22 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { Component, inject, OnInit, OnDestroy, signal } from '@angular/core';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Supabase } from '../../services/supabase';
 import { SavedSurvey, Survey } from '../../models/survey.model/survey.model';
 import { SurveyVote } from '../../models/survey-vote.model';
 
 
+
 @Component({
   selector: 'app-survey-detail',
-  imports: [],
+  imports: [RouterLink],
   templateUrl: './survey-detail.html',
   styleUrl: './survey-detail.scss',
 })
-export class SurveyDetail implements OnInit {
+export class SurveyDetail implements OnInit, OnDestroy {
   route = inject(ActivatedRoute)
   supabase = inject(Supabase)
+
+  votesChannel: ReturnType<Supabase['subscribeToVotes']> | null = null;
 
   async ngOnInit(): Promise<void> {
     console.log('Detailseite gestartet');
@@ -54,6 +57,14 @@ export class SurveyDetail implements OnInit {
       const loadedVotes = await this.supabase.loadVotes(questionIds)
       console.log(loadedVotes);
       this.savedVotes.set(loadedVotes);
+      this.votesChannel = this.supabase.subscribeToVotes(async () => {
+  try {
+    const updatedVotes = await this.supabase.loadVotes(questionIds);
+    this.savedVotes.set(updatedVotes);
+  } catch (error) {
+    console.error('Live-Ergebnisse konnten nicht geladen werden:', error);
+  }
+});
       console.log(this.savedVotes());
       console.log(this.selectedAnswers);
       console.log(survey);
@@ -206,4 +217,11 @@ export class SurveyDetail implements OnInit {
     const totalPercentage = answerVotes / totalVotes * 100;
     return Math.round(totalPercentage)
   }
+
+  ngOnDestroy(): void {
+  if (this.votesChannel !== null) {
+    void this.supabase.client.removeChannel(this.votesChannel);
+    this.votesChannel = null;
+  }
+}
 }

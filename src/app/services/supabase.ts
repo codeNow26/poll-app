@@ -104,4 +104,21 @@ export class Supabase {
     }
 }
 
+subscribeToVotes(onVoteAdded: () => void) {
+  return this.client
+    .channel('survey-votes')
+    .on(
+      'postgres_changes',
+      {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'survey_votes',
+      },
+      () => {
+        onVoteAdded();
+      }
+    )
+    .subscribe();
+}
+
 }

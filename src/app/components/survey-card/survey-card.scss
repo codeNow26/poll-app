@@ -13,7 +13,7 @@
     border-radius: 0 40px 0 0;
     background-color: #46364d;
     color: #fff;
-     text-decoration: none;
+    text-decoration: none;
     cursor: pointer;
     transition: background-color 150ms ease;
 
@@ -61,7 +61,7 @@
         background-color: #f9f4fc;
         color: #35273a;
 
-         &:hover {
+        &:hover {
             background-color: #eee5f3;
         }
 
@@ -75,6 +75,13 @@
 
         .survey-card__deadline {
             align-self: flex-start;
+        }
+    }
+
+    @media (max-width: 600px) {
+        .survey-card--featured {
+            min-height: 190px;
+            padding: 24px;
         }
     }
 }
