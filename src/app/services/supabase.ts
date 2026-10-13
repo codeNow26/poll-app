@@ -54,17 +54,17 @@ export class Supabase {
     return data.id
   }
 
-  async loadSurveys(): Promise<Survey[]> {
-    const { data, error } = await this.client
-      .from('surveys')
-      .select('*, questions(*)')
+  async loadSurveys(): Promise<SavedSurvey[]> {
+  const { data, error } = await this.client
+    .from('surveys')
+    .select('*, questions(*)');
 
-    if (error) {
-      throw error;
-    } else {
-      return data;
-    }
+  if (error) {
+    throw error;
   }
+
+  return data;
+}
 
   async loadSurvey(surveyId: number): Promise<SavedSurvey> {
     const { data, error } = await this.client

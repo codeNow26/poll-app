@@ -13,6 +13,19 @@
     border-radius: 0 40px 0 0;
     background-color: #46364d;
     color: #fff;
+     text-decoration: none;
+    cursor: pointer;
+    transition: background-color 150ms ease;
+
+    &:hover {
+        background-color: #51405a;
+    }
+
+    &:focus-visible {
+        outline: 3px solid #ffb770;
+        outline-offset: -3px;
+    }
+
 
     &__category {
         margin: 0 0 8px;
@@ -47,6 +60,10 @@
         border-top-right-radius: 72px;
         background-color: #f9f4fc;
         color: #35273a;
+
+         &:hover {
+            background-color: #eee5f3;
+        }
 
         .survey-card__category {
             color: #35273a;

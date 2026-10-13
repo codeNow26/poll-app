@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { FormControl, ReactiveFormsModule, FormGroup, FormArray, Validators } from '@angular/forms';
 import { RouterLink, Router } from '@angular/router';
 import { Survey } from '../../models/survey.model/survey.model';
@@ -54,7 +54,7 @@ export class CreateSurvey {
     try {
       const surveyId = await this.supabase.saveSurvey(newSurvey);
       this.createdSurveyId = surveyId;
-      this.isSuccessOverlayOpen = true;
+      this.isSuccessOverlayOpen.set(true);
       console.log(surveyId)
     } catch (error) {
       console.error('Umfragen konnten nicht gespeichert werden:', error);
@@ -63,7 +63,7 @@ export class CreateSurvey {
   }
 
   createdSurveyId: number | null = null;
-  isSuccessOverlayOpen = false;
+  isSuccessOverlayOpen = signal(false);
 
   closeSuccessOverlay() {
     if (this.createdSurveyId === null) {

@@ -29,61 +29,68 @@
     <section class="survey-section">
         <h2 class="survey-section__title text-primary">Your surveys</h2>
 
-        <div class="surveys">
-            <h3 class="surveys__title">Ending soon surveys</h3>
-            <div class="surveys__cards">
-                @for (item of endingSoonSurveys; track item.title) {
-                    <app-survey-card [survey]="item" variant="featured" />
-                }
-            </div>
-        </div>
+        @if (isLoading()) {
+            <p role="status">Loading surveys...</p>
+        } @else if (showLoadError()) {
+            <p role="alert">Surveys could not be loaded. Please reload the page.</p>
+        } @else {
+            <div class="surveys">
+                <h3 class="surveys__title">Ending soon surveys</h3>
 
-        <div class="surveys-overview">
-            <div class="surveys-overview__controls">
-                <div class="surveys-overview__tabs">
-                    <button [class.surveys-overview__tab--selected]="selectedTab === 'active'"
-                        (click)="switchSurveys('active')" class="surveys-overview__tab">Active Surveys</button>
-                    <button [class.surveys-overview__tab--selected]="selectedTab === 'past'"
-                        (click)="switchSurveys('past')" class="surveys-overview__tab">Past Surveys</button>
+                <div class="surveys__cards">
+                    @for (item of endingSoonSurveys(); track item.id) {
+                        <app-survey-card [survey]="item" variant="featured" />
+                    }
+                </div>
+            </div>
+
+            <div class="surveys-overview">
+                <div class="surveys-overview__controls">
+                    <div class="surveys-overview__tabs">
+                        <button [class.surveys-overview__tab--selected]="selectedTab === 'active'"
+                            (click)="switchSurveys('active')" class="surveys-overview__tab">Active Surveys</button>
+                        <button [class.surveys-overview__tab--selected]="selectedTab === 'past'"
+                            (click)="switchSurveys('past')" class="surveys-overview__tab">Past Surveys</button>
+                    </div>
+
+                    <button [class.surveys-overview__category-button--selected]="selectedCategory !== 'All Surveys'"
+                        (click)="toggleCategoryDropdown()" class="surveys-overview__category-button" type="button">
+                        Sort by categories
+                        <img [class.surveys-overview__category-arrow--open]="isCategoryDropdownOpen"
+                            class="surveys-overview__category-arrow" src="icons/arrow_drop_down.svg" alt="">
+                    </button>
                 </div>
 
-                <button [class.surveys-overview__category-button--selected]="selectedCategory !== 'All Surveys'"
-                    (click)="toggleCategoryDropdown()" class="surveys-overview__category-button" type="button">
-                    Sort by categories
-                    <img [class.surveys-overview__category-arrow--open]="isCategoryDropdownOpen"
-                        class="surveys-overview__category-arrow" src="icons/arrow_drop_down.svg" alt="">
-                </button>
-            </div>
-
-            @if (selectedCategory !== 'All Surveys') {
-                <p class="surveys-overview__selected-category">
-                    {{ selectedCategory }}
-                </p>
-            }
-
-            @if (isCategoryDropdownOpen) {
-                <div class="surveys-overview__category-menu">
-                    <button (click)="switchCategory('All Surveys')">All Surveys</button>
-                    <button class="surveys-overview__category-option"
-                        (click)="switchCategory('Health & Wellness')">Health & Wellness</button>
-                    <button class="surveys-overview__category-option"
-                        (click)="switchCategory('Gaming & Entertainment')">Gaming & Entertainment</button>
-                    <button class="surveys-overview__category-option"
-                        (click)="switchCategory('Education & Learning')">Education & Learning</button>
-                    <button class="surveys-overview__category-option"
-                        (click)="switchCategory('Lifestyle & Preferences')">Lifestyle & Preferences</button>
-                    <button class="surveys-overview__category-option"
-                        (click)="switchCategory('Technology & Innovation')">Technology & Innovation</button>
-                </div>
-            }
-
-            <div class="surveys-overview__list">
-                @for (item of getVisibleSurveys(); track item.title) {
-                    <app-survey-card [survey]="item" />
-                } @empty {
-                    <p class="surveys-overview__empty-message">no surveys available</p>
+                @if (selectedCategory !== 'All Surveys') {
+                    <p class="surveys-overview__selected-category">
+                        {{ selectedCategory }}
+                    </p>
                 }
+
+                @if (isCategoryDropdownOpen) {
+                    <div class="surveys-overview__category-menu">
+                        <button (click)="switchCategory('All Surveys')">All Surveys</button>
+                        <button class="surveys-overview__category-option"
+                            (click)="switchCategory('Health & Wellness')">Health & Wellness</button>
+                        <button class="surveys-overview__category-option"
+                            (click)="switchCategory('Gaming & Entertainment')">Gaming & Entertainment</button>
+                        <button class="surveys-overview__category-option"
+                            (click)="switchCategory('Education & Learning')">Education & Learning</button>
+                        <button class="surveys-overview__category-option"
+                            (click)="switchCategory('Lifestyle & Preferences')">Lifestyle & Preferences</button>
+                        <button class="surveys-overview__category-option"
+                            (click)="switchCategory('Technology & Innovation')">Technology & Innovation</button>
+                    </div>
+                }
+
+                <div class="surveys-overview__list">
+                    @for (item of getVisibleSurveys(); track item.id) {
+                        <app-survey-card [survey]="item" />
+                    } @empty {
+                        <p class="surveys-overview__empty-message">no surveys available</p>
+                    }
+                </div>
             </div>
-        </div>
+        }
     </section>
 </main>

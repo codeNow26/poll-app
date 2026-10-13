@@ -1,6 +1,7 @@
-<article
+<a
     class="survey-card"
     [class.survey-card--featured]="variant() === 'featured'"
+    [routerLink]="['/survey', survey().id]"
 >
     <p class="survey-card__category">
         {{ survey().category }}
@@ -15,4 +16,4 @@
             {{ getDeadlineLabel() }}
         </p>
     }
-</article>
+</a>
