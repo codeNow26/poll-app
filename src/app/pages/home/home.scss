@@ -283,6 +283,69 @@
     }
 }
 
+.hero-right {
+  position: relative;
+
+  &__decoration {
+    position: absolute;
+    z-index: 1;
+    display: block;
+    height: auto;
+    pointer-events: none;
+    user-select: none;
+    will-change: transform;
+    animation: hero-float 4.5s ease-in-out infinite;
+
+    &--bubble {
+      top: 0;
+      left: 0;
+      width: 36%;
+      animation-delay: -1.2s;
+    }
+
+    &--question {
+      top: 16%;
+      right: 1%;
+      width: 21%;
+      animation-duration: 5s;
+      animation-delay: -2.4s;
+    }
+
+    &--check {
+      top: 60%;
+      left: 1%;
+      width: 19%;
+      animation-duration: 4s;
+      animation-delay: -0.6s;
+    }
+
+    &--star {
+      right: 0;
+      bottom: 10%;
+      width: 17%;
+      animation-duration: 4.8s;
+      animation-delay: -3s;
+    }
+  }
+}
+
+@keyframes hero-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-right__decoration {
+    animation: none;
+  }
+}
+
 @media (max-width: 900px) {
     .surveys__cards {
         grid-template-columns: repeat(2, minmax(0, 1fr));

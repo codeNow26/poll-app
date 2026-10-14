@@ -19,8 +19,14 @@
                             Survey name
                         </label>
 
-                        <input type="text" [formControl]="surveyName" id="survey-name" class="create-survey__input">
+                        <div class="create-survey__clear-row">
+                            <input type="text" [formControl]="surveyName" id="survey-name" class="create-survey__input">
 
+                            <button class="create-survey__delete" type="button" (click)="surveyName.setValue('')"
+                                aria-label="Clear survey name">
+                                <img src="assets/icons/delete.svg" alt="">
+                            </button>
+                        </div>
                         @if (surveyName.invalid && surveyName.touched) {
                         <p class="create-survey__error">
                             Please enter a survey name.
@@ -34,8 +40,15 @@
                                 Set end date <span>(optional)</span>
                             </label>
 
-                            <input [formControl]="surveyDeadline" type="date" id="survey-enddate"
-                                class="create-survey__input">
+                            <div class="create-survey__clear-row">
+                                <input [formControl]="surveyDeadline" type="date" id="survey-enddate"
+                                    class="create-survey__input">
+
+                                <button class="create-survey__delete" type="button"
+                                    (click)="surveyDeadline.setValue('')" aria-label="Clear end date">
+                                    <img src="assets/icons/delete.svg" alt="">
+                                </button>
+                            </div>
                         </div>
 
                         <div class="create-survey__category">
@@ -89,8 +102,15 @@
                             Describing text <span>(optional)</span>
                         </label>
 
-                        <textarea [formControl]="surveyDescription" id="survey-description"
-                            class="create-survey__textarea"></textarea>
+                        <div class="create-survey__clear-row">
+    <textarea [formControl]="surveyDescription" id="survey-description"
+        class="create-survey__textarea"></textarea>
+
+    <button class="create-survey__delete" type="button"
+        (click)="surveyDescription.setValue('')" aria-label="Clear description">
+        <img src="assets/icons/delete.svg" alt="">
+    </button>
+</div>
                     </div>
                 </div>
             </div>
@@ -111,7 +131,7 @@
                         <button class="create-survey__delete" (click)="removeQuestion(questionIndex)"
                             [disabled]="questions.length <= 1"
                             [attr.aria-label]="'Delete question ' + (questionIndex + 1)" type="button">
-                            <span aria-hidden="true">×</span>
+                            <img src="assets/icons/delete.svg" alt="Delete question">
                         </button>
                     </div>
 
@@ -148,7 +168,7 @@
                                     (click)="removeAnswer(questionIndex, answerIndex)"
                                     [disabled]="getAnswers(questionIndex).length <= 2"
                                     [attr.aria-label]="'Delete answer ' + answerLabels[answerIndex]">
-                                    <span aria-hidden="true">×</span>
+                                   <img src="assets/icons/delete.svg" alt="">
                                 </button>
 
                                 @if (answer.invalid && answer.touched) {
@@ -163,21 +183,22 @@
 
                     <button [disabled]="getAnswers(questionIndex).length >= 6" (click)="addAnswer(questionIndex)"
                         type="button" class="create-survey__add-answer-btn">
-                        Add answer <span aria-hidden="true">⊕</span>
+                        Add answer <span aria-hidden="true"><img src="assets/icons/add_circle.svg"></span>
                     </button>
                 </fieldset>
                 }
 
                 <button (click)="addQuestion()" type="button" class="create-survey__add-question">
-                    Add next question <span aria-hidden="true">⊕</span>
+                    Add next question <span aria-hidden="true"><img src="assets/icons/add_circle.svg"></span>
                 </button>
             </div>
         </div>
 
         <div class="create-survey__actions">
-            <button type="submit" class="create-survey__publish">
-                Publish
-            </button>
+           <button type="submit" class="create-survey__publish">
+    <span>Publish</span>
+    <img src="assets/icons/check.svg" alt="">
+</button>
         </div>
     </form>
 
