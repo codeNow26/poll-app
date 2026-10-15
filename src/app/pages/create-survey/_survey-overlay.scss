@@ -1,0 +1,65 @@
+.create-survey {
+  &__success-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-end;
+    padding: 24px;
+    overflow: hidden;
+    background-color: rgb(0 0 0 / 40%);
+  }
+
+  &__success-overlay {
+    display: flex;
+    align-items: flex-start;
+    gap: 24px;
+    width: 100%;
+    max-width: 440px;
+    padding: 28px;
+    border-radius: 6px 64px 6px 6px;
+    background-color: #ffe8d0;
+    color: #35273a;
+    box-shadow: 0 16px 40px rgb(0 0 0 / 20%);
+    animation: success-slide-in 350ms ease-out both;
+
+    h2 {
+      flex: 1;
+      margin: 0;
+      font-family: 'Nerko One', cursive;
+      font-size: 30px;
+      font-weight: 400;
+      line-height: 1.15;
+    }
+
+    button {
+      flex-shrink: 0;
+      padding: 0;
+      border: none;
+      background: transparent;
+      color: #35273a;
+      font-size: 28px;
+      line-height: 1;
+      cursor: pointer;
+    }
+  }
+}
+
+@keyframes success-slide-in {
+  from {
+    transform: translateX(calc(100% + 24px));
+    opacity: 0;
+  }
+
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .create-survey__success-overlay {
+    animation: none;
+  }
+}

@@ -1,8 +1,14 @@
-import { Component, inject, signal } from '@angular/core';
-import { FormControl, ReactiveFormsModule, FormGroup, FormArray, Validators } from '@angular/forms';
-import { RouterLink, Router } from '@angular/router';
+import { Component, inject, signal, WritableSignal } from '@angular/core';
+import {
+  FormArray,
+  FormControl,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
+import { Router, RouterLink } from '@angular/router';
+
 import { Survey } from '../../models/survey.model/survey.model';
-import { SurveyQuestion } from '../../models/survey.model/survey-question.model';
 import { Supabase } from '../../services/supabase';
 
 type SurveyCategory =
@@ -13,23 +19,49 @@ type SurveyCategory =
   | 'Lifestyle & Preferences'
   | 'Technology & Innovation';
 
+type QuestionForm = FormGroup<{
+  questionText: FormControl<string>;
+  answers: FormArray<FormControl<string>>;
+  multipleAnswers: FormControl<boolean>;
+}>;
+
+type SurveyForm = FormGroup<{
+  surveyName: FormControl<string>;
+  surveyDescription: FormControl<string>;
+  surveyDeadline: FormControl<string>;
+  questions: FormArray<QuestionForm>;
+  surveyCategory: FormControl<SurveyCategory | ''>;
+}>;
+
+const MIN_ANSWERS: number = 2;
+const MAX_ANSWERS: number = 6;
+const MIN_QUESTIONS: number = 1;
+
 @Component({
   selector: 'app-create-survey',
-  imports: [RouterLink, ReactiveFormsModule,],
+  imports: [RouterLink, ReactiveFormsModule],
   templateUrl: './create-survey.html',
   styleUrl: './create-survey.scss',
 })
-
 export class CreateSurvey {
-  surveyName = new FormControl('', [Validators.required, Validators.pattern(/\S/)]);
-  surveyDescription = new FormControl('');
-  surveyDeadline = new FormControl('');
-  questions = new FormArray([this.createQuestionForm()]);
-  selectedCategory = new FormControl<SurveyCategory | ''>('', Validators.required);
-  supabase = inject(Supabase);
-  router = inject(Router);
+  private readonly supabase: Supabase = inject(Supabase);
+  private readonly router: Router = inject(Router);
+  private isSaving: boolean = false;
 
-  surveyForm = new FormGroup({
+  readonly surveyName: FormControl<string> = this.createRequiredTextControl();
+  readonly surveyDescription: FormControl<string> =
+    new FormControl('', { nonNullable: true });
+  readonly surveyDeadline: FormControl<string> =
+    new FormControl('', { nonNullable: true });
+  readonly questions: FormArray<QuestionForm> =
+    new FormArray<QuestionForm>([this.createQuestionForm()]);
+  readonly selectedCategory: FormControl<SurveyCategory | ''> =
+    new FormControl<SurveyCategory | ''>('', {
+      nonNullable: true,
+      validators: [Validators.required],
+    });
+
+  readonly surveyForm: SurveyForm = new FormGroup({
     surveyName: this.surveyName,
     surveyDescription: this.surveyDescription,
     surveyDeadline: this.surveyDeadline,
@@ -37,95 +69,127 @@ export class CreateSurvey {
     surveyCategory: this.selectedCategory,
   });
 
+  readonly isSuccessOverlayOpen: WritableSignal<boolean> = signal(false);
+  readonly answerLabels: string[] = ['A', 'B', 'C', 'D', 'E', 'F'];
+
+  createdSurveyId: number | null = null;
+  isCategoryDropdownOpen: boolean = false;
+
+  /** Validates the form and starts saving a new survey. */
   async submitSurvey(): Promise<void> {
+    if (this.isSaving || this.createdSurveyId !== null) {
+      return;
+    }
     if (this.surveyForm.invalid) {
       this.surveyForm.markAllAsTouched();
       return;
     }
-    const formValue = this.surveyForm.getRawValue();
-
-    const newSurvey: Survey = {
-      title: formValue.surveyName ?? '',
-      description: formValue.surveyDescription ?? '',
-      category: formValue.surveyCategory ?? '',
-      questions: formValue.questions as SurveyQuestion[],
-      deadline: formValue.surveyDeadline || null,
-    }
-    try {
-      const surveyId = await this.supabase.saveSurvey(newSurvey);
-      this.createdSurveyId = surveyId;
-      this.isSuccessOverlayOpen.set(true);
-      console.log(surveyId)
-    } catch (error) {
-      console.error('Umfragen konnten nicht gespeichert werden:', error);
-      return;
-    }
+    await this.saveSurvey(this.createSurveyData());
   }
 
-  createdSurveyId: number | null = null;
-  isSuccessOverlayOpen = signal(false);
-
-  closeSuccessOverlay() {
+  /** Opens the newly created survey after the confirmation is closed. */
+  closeSuccessOverlay(): void {
     if (this.createdSurveyId === null) {
       return;
-    } else {
-      this.router.navigate(['/survey', this.createdSurveyId]);
     }
-    console.log(this.createdSurveyId)
+    void this.router.navigate(['/survey', this.createdSurveyId]);
   }
 
-  createQuestionForm(): FormGroup {
+  /** Creates a question with its initial answers and selection mode. */
+  createQuestionForm(): QuestionForm {
     return new FormGroup({
-      questionText: new FormControl('', [Validators.required, Validators.pattern(/\S/)]),
-      answers: new FormArray([
-        new FormControl('', [Validators.required, Validators.pattern(/\S/)]),
-        new FormControl('', [Validators.required, Validators.pattern(/\S/)]),
-      ]),
-      multipleAnswers: new FormControl(false)
+      questionText: this.createRequiredTextControl(),
+      answers: this.createInitialAnswers(),
+      multipleAnswers: new FormControl(false, { nonNullable: true }),
     });
   }
 
+  /** Adds an empty question to the survey. */
   addQuestion(): void {
     this.questions.push(this.createQuestionForm());
   }
 
-  getAnswers(questionIndex: number): FormArray {
-    return this.questions
-      .at(questionIndex)
-      .get('answers') as FormArray;
+  /** Returns the answer controls for a question. */
+  getAnswers(questionIndex: number): FormArray<FormControl<string>> {
+    return this.questions.at(questionIndex).controls.answers;
   }
 
+  /** Adds an answer unless the maximum number has been reached. */
   addAnswer(questionIndex: number): void {
-    const answerArray = this.getAnswers(questionIndex);
-
-    if (answerArray.length < 6) {
-      answerArray.push(new FormControl('', [Validators.required, Validators.pattern(/\S/)]));
+    const ANSWERS: FormArray<FormControl<string>> =
+      this.getAnswers(questionIndex);
+    if (ANSWERS.length < MAX_ANSWERS) {
+      ANSWERS.push(this.createRequiredTextControl());
     }
   }
 
+  /** Removes an answer while keeping the required minimum. */
   removeAnswer(questionIndex: number, answerIndex: number): void {
-    const answerArray = this.getAnswers(questionIndex);
-    if (answerArray.length > 2) {
-      answerArray.removeAt(answerIndex);
+    const ANSWERS: FormArray<FormControl<string>> =
+      this.getAnswers(questionIndex);
+    if (ANSWERS.length > MIN_ANSWERS) {
+      ANSWERS.removeAt(answerIndex);
     }
   }
 
+  /** Removes a question while keeping at least one question. */
   removeQuestion(questionIndex: number): void {
-    if (this.questions.length > 1) {
-      this.questions.removeAt(questionIndex)
+    if (this.questions.length > MIN_QUESTIONS) {
+      this.questions.removeAt(questionIndex);
     }
   }
 
-  isCategoryDropdownOpen = false;
-
+  /** Toggles the category dropdown. */
   toggleCategoryDropdown(): void {
-    this.isCategoryDropdownOpen = !this.isCategoryDropdownOpen
+    this.isCategoryDropdownOpen = !this.isCategoryDropdownOpen;
   }
 
+  /** Selects a category and closes the dropdown. */
   switchCategory(surveyCategory: SurveyCategory): void {
     this.selectedCategory.setValue(surveyCategory);
     this.isCategoryDropdownOpen = false;
   }
 
-  answerLabels = ['A', 'B', 'C', 'D', 'E', 'F'];
+  /** Creates a text control that rejects empty and whitespace-only values. */
+  private createRequiredTextControl(): FormControl<string> {
+    return new FormControl('', {
+      nonNullable: true,
+      validators: [Validators.required, Validators.pattern(/\S/)],
+    });
+  }
+
+  /** Creates the minimum number of empty answer controls. */
+  private createInitialAnswers(): FormArray<FormControl<string>> {
+    const ANSWERS: FormControl<string>[] = Array.from(
+      { length: MIN_ANSWERS },
+      (): FormControl<string> => this.createRequiredTextControl(),
+    );
+    return new FormArray<FormControl<string>>(ANSWERS);
+  }
+
+  /** Converts the form values into the survey model. */
+  private createSurveyData(): Survey {
+    const FORM_VALUE: ReturnType<SurveyForm['getRawValue']> =
+      this.surveyForm.getRawValue();
+    return {
+      title: FORM_VALUE.surveyName,
+      description: FORM_VALUE.surveyDescription,
+      category: FORM_VALUE.surveyCategory,
+      questions: FORM_VALUE.questions,
+      deadline: FORM_VALUE.surveyDeadline || null,
+    };
+  }
+
+  /** Saves the survey and opens the confirmation after success. */
+  private async saveSurvey(survey: Survey): Promise<void> {
+    this.isSaving = true;
+    try {
+      this.createdSurveyId = await this.supabase.saveSurvey(survey);
+      this.isSuccessOverlayOpen.set(true);
+    } catch (error: unknown) {
+      console.error('Survey could not be saved:', error);
+    } finally {
+      this.isSaving = false;
+    }
+  }
 }
