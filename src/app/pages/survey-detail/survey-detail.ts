@@ -1,19 +1,10 @@
-import {
-  Component,
-  inject,
-  OnDestroy,
-  OnInit,
-  signal,
-  WritableSignal,
-} from '@angular/core';
+import { Component, inject, OnDestroy, OnInit, signal, WritableSignal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-
 import { SavedSurvey } from '../../models/survey.model/survey.model';
 import { SurveyVote } from '../../models/survey-vote.model';
 import { Supabase } from '../../services/supabase';
 
 type VotesChannel = ReturnType<Supabase['subscribeToVotes']>;
-
 const PERCENTAGE_FACTOR: number = 100;
 const VOTE_STORAGE_PREFIX: string = 'voted-survey-';
 
@@ -23,19 +14,20 @@ const VOTE_STORAGE_PREFIX: string = 'voted-survey-';
   templateUrl: './survey-detail.html',
   styleUrl: './survey-detail.scss',
 })
-export class SurveyDetail implements OnInit, OnDestroy {
-  private readonly route: ActivatedRoute = inject(ActivatedRoute);
-  private readonly supabase: Supabase = inject(Supabase);
-  private votesChannel: VotesChannel | null = null;
-  private isDestroyed: boolean = false;
 
-  readonly survey: WritableSignal<SavedSurvey | null> =
+export class SurveyDetail implements OnInit, OnDestroy {
+  route: ActivatedRoute = inject(ActivatedRoute);
+  supabase: Supabase = inject(Supabase);
+  votesChannel: VotesChannel | null = null;
+  isDestroyed: boolean = false;
+
+  survey: WritableSignal<SavedSurvey | null> =
     signal<SavedSurvey | null>(null);
-  readonly savedVotes: WritableSignal<SurveyVote[]> =
+  savedVotes: WritableSignal<SurveyVote[]> =
     signal<SurveyVote[]>([]);
-  readonly showSaveError: WritableSignal<boolean> = signal(false);
-  readonly isSaving: WritableSignal<boolean> = signal(false);
-  readonly hasVoted: WritableSignal<boolean> = signal(false);
+  showSaveError: WritableSignal<boolean> = signal(false);
+  isSaving: WritableSignal<boolean> = signal(false);
+  hasVoted: WritableSignal<boolean> = signal(false);
 
   selectedAnswers: number[][] = [];
   showAnswerError: boolean = false;
@@ -60,11 +52,7 @@ export class SurveyDetail implements OnInit, OnDestroy {
   }
 
   /** Updates an answer selection if voting is still allowed. */
-  selectAnswer(
-    questionIndex: number,
-    answerIndex: number,
-    isChecked: boolean,
-  ): void {
+  selectAnswer(questionIndex: number, answerIndex: number, isChecked: boolean,): void {
     const CURRENT_SURVEY: SavedSurvey | null = this.survey();
     if (CURRENT_SURVEY === null || this.isVotingBlocked()) {
       return;
@@ -141,20 +129,18 @@ export class SurveyDetail implements OnInit, OnDestroy {
   }
 
   /** Reads a valid positive survey ID from the URL. */
-  private getSurveyId(): number | null {
+  getSurveyId(): number | null {
     const ROUTE_ID: string | null =
       this.route.snapshot.paramMap.get('id');
     if (ROUTE_ID === null) {
       return null;
     }
     const SURVEY_ID: number = Number(ROUTE_ID);
-    return Number.isSafeInteger(SURVEY_ID) && SURVEY_ID > 0
-      ? SURVEY_ID
-      : null;
+    return Number.isSafeInteger(SURVEY_ID) && SURVEY_ID > 0 ? SURVEY_ID : null;
   }
 
   /** Loads the survey and prepares answer selections and results. */
-  private async loadSurveyDetails(surveyId: number): Promise<void> {
+  async loadSurveyDetails(surveyId: number): Promise<void> {
     try {
       const LOADED_SURVEY: SavedSurvey =
         await this.supabase.loadSurvey(surveyId);
@@ -169,7 +155,7 @@ export class SurveyDetail implements OnInit, OnDestroy {
   }
 
   /** Initializes an empty answer selection for each question. */
-  private initializeSurvey(loadedSurvey: SavedSurvey): void {
+  initializeSurvey(loadedSurvey: SavedSurvey): void {
     this.selectedAnswers = loadedSurvey.questions.map(
       (): number[] => [],
     );
@@ -177,7 +163,7 @@ export class SurveyDetail implements OnInit, OnDestroy {
   }
 
   /** Starts the realtime subscription and loads existing votes. */
-  private async initializeResults(loadedSurvey: SavedSurvey): Promise<void> {
+  async initializeResults(loadedSurvey: SavedSurvey): Promise<void> {
     const QUESTION_IDS: number[] = this.getQuestionIds(loadedSurvey);
     this.votesChannel = this.supabase.subscribeToVotes(
       (): void => {
@@ -188,14 +174,14 @@ export class SurveyDetail implements OnInit, OnDestroy {
   }
 
   /** Returns the IDs of all questions in a survey. */
-  private getQuestionIds(loadedSurvey: SavedSurvey): number[] {
+  getQuestionIds(loadedSurvey: SavedSurvey): number[] {
     return loadedSurvey.questions.map(
       (question): number => question.id,
     );
   }
 
   /** Refreshes results and handles loading errors separately from saving. */
-  private async refreshVotes(questionIds: number[]): Promise<void> {
+  async refreshVotes(questionIds: number[]): Promise<void> {
     try {
       const LOADED_VOTES: SurveyVote[] =
         await this.supabase.loadVotes(questionIds);
@@ -208,12 +194,12 @@ export class SurveyDetail implements OnInit, OnDestroy {
   }
 
   /** Checks whether changing answers or submitting votes is blocked. */
-  private isVotingBlocked(): boolean {
+  isVotingBlocked(): boolean {
     return this.isSaving() || this.hasVoted() || this.isSurveyExpired();
   }
 
   /** Adds or removes an answer in a multiple-choice selection. */
-  private updateMultipleAnswers(
+  updateMultipleAnswers(
     questionIndex: number,
     answerIndex: number,
     isChecked: boolean,
@@ -228,7 +214,7 @@ export class SurveyDetail implements OnInit, OnDestroy {
   }
 
   /** Checks whether every question has at least one selected answer. */
-  private validateAnswers(currentSurvey: SavedSurvey): boolean {
+  validateAnswers(currentSurvey: SavedSurvey): boolean {
     this.showAnswerError = currentSurvey.questions.some(
       (_question, questionIndex: number): boolean =>
         (this.selectedAnswers[questionIndex]?.length ?? 0) === 0,
@@ -237,7 +223,7 @@ export class SurveyDetail implements OnInit, OnDestroy {
   }
 
   /** Builds the votes to save from the current answer selections. */
-  private createVotes(currentSurvey: SavedSurvey): SurveyVote[] {
+  createVotes(currentSurvey: SavedSurvey): SurveyVote[] {
     return currentSurvey.questions.map(
       (question, questionIndex: number): SurveyVote => ({
         question_id: question.id,
@@ -247,7 +233,7 @@ export class SurveyDetail implements OnInit, OnDestroy {
   }
 
   /** Saves the submission and always resets the saving state. */
-  private async saveSubmission(currentSurvey: SavedSurvey): Promise<void> {
+  async saveSubmission(currentSurvey: SavedSurvey): Promise<void> {
     this.isSaving.set(true);
     try {
       await this.supabase.saveVotes(this.createVotes(currentSurvey));
@@ -264,7 +250,7 @@ export class SurveyDetail implements OnInit, OnDestroy {
   }
 
   /** Restores the survey's voting status from local storage. */
-  private restoreVotingStatus(surveyId: number): void {
+  restoreVotingStatus(surveyId: number): void {
     try {
       const STORED_STATUS: string | null =
         localStorage.getItem(VOTE_STORAGE_PREFIX + surveyId);
@@ -275,7 +261,7 @@ export class SurveyDetail implements OnInit, OnDestroy {
   }
 
   /** Stores a successful submission's voting status in this browser. */
-  private storeVotingStatus(surveyId: number): void {
+  storeVotingStatus(surveyId: number): void {
     try {
       localStorage.setItem(VOTE_STORAGE_PREFIX + surveyId, 'true');
     } catch (error: unknown) {

@@ -1,18 +1,10 @@
-import {
-  Component,
-  inject,
-  OnInit,
-  signal,
-  WritableSignal,
-} from '@angular/core';
+import { Component, inject, OnInit, signal, WritableSignal } from '@angular/core';
 import { RouterLink } from '@angular/router';
-
 import { SurveyCard } from '../../components/survey-card/survey-card';
 import { SavedSurvey } from '../../models/survey.model/survey.model';
 import { Supabase } from '../../services/supabase';
 
 type SurveyTab = 'active' | 'past';
-
 type CategoryFilter =
   | 'All Surveys'
   | 'Team Activities'
@@ -30,20 +22,20 @@ const ENDING_SOON_LIMIT: number = 3;
   templateUrl: './home.html',
   styleUrl: './home.scss',
 })
+
 export class Home implements OnInit {
-  private readonly supabase: Supabase = inject(Supabase);
+  supabase: Supabase = inject(Supabase);
+  surveys: WritableSignal<SavedSurvey[]> =
+    signal<SavedSurvey[]>([]);
+  endingSoonSurveys: WritableSignal<SavedSurvey[]> =
+    signal<SavedSurvey[]>([]);
+  activeSurveys: WritableSignal<SavedSurvey[]> =
+    signal<SavedSurvey[]>([]);
+  pastSurveys: WritableSignal<SavedSurvey[]> =
+    signal<SavedSurvey[]>([]);
 
-  readonly surveys: WritableSignal<SavedSurvey[]> =
-    signal<SavedSurvey[]>([]);
-  readonly endingSoonSurveys: WritableSignal<SavedSurvey[]> =
-    signal<SavedSurvey[]>([]);
-  readonly activeSurveys: WritableSignal<SavedSurvey[]> =
-    signal<SavedSurvey[]>([]);
-  readonly pastSurveys: WritableSignal<SavedSurvey[]> =
-    signal<SavedSurvey[]>([]);
-
-  readonly isLoading: WritableSignal<boolean> = signal(true);
-  readonly showLoadError: WritableSignal<boolean> = signal(false);
+  isLoading: WritableSignal<boolean> = signal(true);
+  showLoadError: WritableSignal<boolean> = signal(false);
 
   selectedTab: SurveyTab = 'active';
   selectedCategory: CategoryFilter = 'All Surveys';
@@ -94,7 +86,7 @@ export class Home implements OnInit {
   }
 
   /** Separates active and expired surveys using today's local date. */
-  private groupSurveys(surveys: SavedSurvey[]): void {
+  groupSurveys(surveys: SavedSurvey[]): void {
     const TODAY: Date = this.getToday();
     const ACTIVE_SURVEYS: SavedSurvey[] = surveys.filter(
       (survey: SavedSurvey): boolean => !this.isExpired(survey, TODAY),
@@ -109,14 +101,14 @@ export class Home implements OnInit {
   }
 
   /** Returns today's date at local midnight. */
-  private getToday(): Date {
+  getToday(): Date {
     const TODAY: Date = new Date();
     TODAY.setHours(0, 0, 0, 0);
     return TODAY;
   }
 
   /** Checks whether a survey's deadline is before today. */
-  private isExpired(survey: SavedSurvey, today: Date): boolean {
+  isExpired(survey: SavedSurvey, today: Date): boolean {
     if (survey.deadline === null) {
       return false;
     }
@@ -125,7 +117,7 @@ export class Home implements OnInit {
   }
 
   /** Sorts by earliest deadline, placing surveys without deadlines last. */
-  private compareDeadlines(first: SavedSurvey, second: SavedSurvey): number {
+  compareDeadlines(first: SavedSurvey, second: SavedSurvey): number {
     if (first.deadline === null && second.deadline === null) {
       return 0;
     }
@@ -139,7 +131,7 @@ export class Home implements OnInit {
   }
 
   /** Selects the first upcoming surveys from the sorted active list. */
-  private updateEndingSoonSurveys(activeSurveys: SavedSurvey[]): void {
+  updateEndingSoonSurveys(activeSurveys: SavedSurvey[]): void {
     const SURVEYS_WITH_DEADLINE: SavedSurvey[] = activeSurveys.filter(
       (survey: SavedSurvey): boolean => survey.deadline !== null,
     );

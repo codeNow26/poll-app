@@ -1,13 +1,6 @@
 import { Component, inject, signal, WritableSignal } from '@angular/core';
-import {
-  FormArray,
-  FormControl,
-  FormGroup,
-  ReactiveFormsModule,
-  Validators,
-} from '@angular/forms';
+import { FormArray, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-
 import { Survey } from '../../models/survey.model/survey.model';
 import { Supabase } from '../../services/supabase';
 
@@ -44,24 +37,24 @@ const MIN_QUESTIONS: number = 1;
   styleUrl: './create-survey.scss',
 })
 export class CreateSurvey {
-  private readonly supabase: Supabase = inject(Supabase);
-  private readonly router: Router = inject(Router);
+  private supabase: Supabase = inject(Supabase);
+  private router: Router = inject(Router);
   private isSaving: boolean = false;
 
-  readonly surveyName: FormControl<string> = this.createRequiredTextControl();
-  readonly surveyDescription: FormControl<string> =
+  surveyName: FormControl<string> = this.createRequiredTextControl();
+  surveyDescription: FormControl<string> =
     new FormControl('', { nonNullable: true });
-  readonly surveyDeadline: FormControl<string> =
+  surveyDeadline: FormControl<string> =
     new FormControl('', { nonNullable: true });
-  readonly questions: FormArray<QuestionForm> =
+  questions: FormArray<QuestionForm> =
     new FormArray<QuestionForm>([this.createQuestionForm()]);
-  readonly selectedCategory: FormControl<SurveyCategory | ''> =
+  selectedCategory: FormControl<SurveyCategory | ''> =
     new FormControl<SurveyCategory | ''>('', {
       nonNullable: true,
       validators: [Validators.required],
     });
 
-  readonly surveyForm: SurveyForm = new FormGroup({
+  surveyForm: SurveyForm = new FormGroup({
     surveyName: this.surveyName,
     surveyDescription: this.surveyDescription,
     surveyDeadline: this.surveyDeadline,
@@ -69,8 +62,8 @@ export class CreateSurvey {
     surveyCategory: this.selectedCategory,
   });
 
-  readonly isSuccessOverlayOpen: WritableSignal<boolean> = signal(false);
-  readonly answerLabels: string[] = ['A', 'B', 'C', 'D', 'E', 'F'];
+  isSuccessOverlayOpen: WritableSignal<boolean> = signal(false);
+  answerLabels: string[] = ['A', 'B', 'C', 'D', 'E', 'F'];
 
   createdSurveyId: number | null = null;
   isCategoryDropdownOpen: boolean = false;

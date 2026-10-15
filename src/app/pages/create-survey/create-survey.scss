@@ -215,12 +215,3 @@
     }
   }
 }
-
-@media (prefers-reduced-motion: reduce) {
-  .create-survey__delete,
-  .create-survey__delete img,
-  .create-survey__publish,
-  .create-survey__publish img {
-    transition: none;
-  }
-}

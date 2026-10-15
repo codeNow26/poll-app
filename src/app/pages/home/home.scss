@@ -284,66 +284,67 @@
 }
 
 .hero-right {
-  position: relative;
+    position: relative;
 
-  &__decoration {
-    position: absolute;
-    z-index: 1;
-    display: block;
-    height: auto;
-    pointer-events: none;
-    user-select: none;
-    will-change: transform;
-    animation: hero-float 4.5s ease-in-out infinite;
+    &__decoration {
+        position: absolute;
+        z-index: 1;
+        display: block;
+        height: auto;
+        pointer-events: none;
+        user-select: none;
+        will-change: transform;
+        animation: hero-float 4.5s ease-in-out infinite;
 
-    &--bubble {
-      top: 0;
-      left: 0;
-      width: 36%;
-      animation-delay: -1.2s;
+        &--bubble {
+            top: 0;
+            left: 0;
+            width: 36%;
+            animation-delay: -1.2s;
+        }
+
+        &--question {
+            top: 16%;
+            right: 1%;
+            width: 21%;
+            animation-duration: 5s;
+            animation-delay: -2.4s;
+        }
+
+        &--check {
+            top: 60%;
+            left: 1%;
+            width: 19%;
+            animation-duration: 4s;
+            animation-delay: -0.6s;
+        }
+
+        &--star {
+            right: 0;
+            bottom: 10%;
+            width: 17%;
+            animation-duration: 4.8s;
+            animation-delay: -3s;
+        }
     }
-
-    &--question {
-      top: 16%;
-      right: 1%;
-      width: 21%;
-      animation-duration: 5s;
-      animation-delay: -2.4s;
-    }
-
-    &--check {
-      top: 60%;
-      left: 1%;
-      width: 19%;
-      animation-duration: 4s;
-      animation-delay: -0.6s;
-    }
-
-    &--star {
-      right: 0;
-      bottom: 10%;
-      width: 17%;
-      animation-duration: 4.8s;
-      animation-delay: -3s;
-    }
-  }
 }
 
 @keyframes hero-float {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
 
-  50% {
-    transform: translateY(-10px);
-  }
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-10px);
+    }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .hero-right__decoration {
-    animation: none;
-  }
+    .hero-right__decoration {
+        animation: none;
+    }
 }
 
 @media (max-width: 900px) {
@@ -387,6 +388,11 @@
         }
     }
 
+    .hero-left__button {
+        display: block;
+        margin-inline: auto;
+    }
+
     .hero-right {
         flex: none;
         width: 100%;
@@ -401,9 +407,30 @@
 }
 
 @media (max-width: 600px) {
+
     .surveys__cards,
     .surveys-overview__list {
         grid-template-columns: 1fr;
+    }
+
+    .surveys__cards {
+        display: grid;
+        grid-template-columns: none;
+        grid-auto-flow: column;
+        grid-auto-columns: 75%;
+        gap: 16px;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        scrollbar-width: none;
+
+        &::-webkit-scrollbar {
+            display: none;
+        }
+
+        >app-survey-card {
+            min-width: 0;
+            scroll-snap-align: start;
+        }
     }
 
     .surveys-overview {

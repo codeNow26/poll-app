@@ -103,14 +103,14 @@
                         </label>
 
                         <div class="create-survey__clear-row">
-    <textarea [formControl]="surveyDescription" id="survey-description"
-        class="create-survey__textarea"></textarea>
+                            <textarea [formControl]="surveyDescription" id="survey-description"
+                                class="create-survey__textarea"></textarea>
 
-    <button class="create-survey__delete" type="button"
-        (click)="surveyDescription.setValue('')" aria-label="Clear description">
-        <img src="assets/icons/delete.svg" alt="">
-    </button>
-</div>
+                            <button class="create-survey__delete" type="button" (click)="surveyDescription.setValue('')"
+                                aria-label="Clear description">
+                                <img src="assets/icons/delete.svg" alt="">
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -168,7 +168,7 @@
                                     (click)="removeAnswer(questionIndex, answerIndex)"
                                     [disabled]="getAnswers(questionIndex).length <= 2"
                                     [attr.aria-label]="'Delete answer ' + answerLabels[answerIndex]">
-                                   <img src="assets/icons/delete.svg" alt="">
+                                    <img src="assets/icons/delete.svg" alt="">
                                 </button>
 
                                 @if (answer.invalid && answer.touched) {
@@ -195,10 +195,10 @@
         </div>
 
         <div class="create-survey__actions">
-           <button type="submit" class="create-survey__publish">
-    <span>Publish</span>
-    <img src="assets/icons/check.svg" alt="">
-</button>
+            <button type="submit" class="create-survey__publish">
+                <span>Publish</span>
+                <img src="assets/icons/check.svg" alt="">
+            </button>
         </div>
     </form>
 

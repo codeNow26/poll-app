@@ -13,6 +13,7 @@ const MILLISECONDS_PER_DAY: number = 86_400_000;
   templateUrl: './survey-card.html',
   styleUrl: './survey-card.scss',
 })
+
 export class SurveyCard {
   readonly survey: InputSignal<SavedSurvey> = input.required<SavedSurvey>();
   readonly variant: InputSignal<SurveyCardVariant> =

@@ -11,19 +11,17 @@ import { SurveyQuestion } from '../models/survey.model/survey-question.model';
 import { SurveyVote } from '../models/survey-vote.model';
 
 type SurveyData = Omit<Survey, 'questions'>;
-
 type QuestionData = SurveyQuestion & {
   survey_id: number;
 };
 
-const SUPABASE_URL: string =
-  'https://ovsxmmeifppkfttpbmil.supabase.co';
-const SUPABASE_PUBLISHABLE_KEY: string =
-  'sb_publishable_qBy7OtYkvPX6WKcaOkgJ_g_AsvObfxz';
+const SUPABASE_URL: string = 'https://ovsxmmeifppkfttpbmil.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY: string = 'sb_publishable_qBy7OtYkvPX6WKcaOkgJ_g_AsvObfxz';
 
 @Injectable({
   providedIn: 'root',
 })
+
 export class Supabase {
   readonly client: SupabaseClient = createClient(
     SUPABASE_URL,
