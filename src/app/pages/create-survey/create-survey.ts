@@ -30,6 +30,10 @@ const MIN_ANSWERS: number = 2;
 const MAX_ANSWERS: number = 6;
 const MIN_QUESTIONS: number = 1;
 const SUCCESS_REDIRECT_DELAY: number = 2000;
+const MAX_TITLE_LENGTH: number = 100;
+const MAX_DESCRIPTION_LENGTH: number = 1000;
+const MAX_QUESTION_LENGTH: number = 200;
+const MAX_ANSWER_LENGTH: number = 150;
 
 @Component({
   selector: 'app-create-survey',
@@ -41,6 +45,10 @@ export class CreateSurvey implements AfterViewInit, OnDestroy {
   cancelled = output<void>();
   surveyDialog = viewChild.required<ElementRef<HTMLDialogElement>>('surveyDialog');
   redirectTimer: ReturnType<typeof setTimeout> | null = null;
+  maxTitleLength: number = MAX_TITLE_LENGTH;
+  maxDescriptionLength: number = MAX_DESCRIPTION_LENGTH;
+  maxQuestionLength: number = MAX_QUESTION_LENGTH;
+  maxAnswerLength: number = MAX_ANSWER_LENGTH;
 
   /** Opens the form as a modal after its view is ready. */
   ngAfterViewInit(): void {
@@ -60,9 +68,13 @@ export class CreateSurvey implements AfterViewInit, OnDestroy {
   router: Router = inject(Router);
   isSaving: boolean = false;
 
-  surveyName: FormControl<string> = this.createRequiredTextControl();
-  surveyDescription: FormControl<string> =
-    new FormControl('', { nonNullable: true });
+  surveyName: FormControl<string> =
+    this.createRequiredTextControl(MAX_TITLE_LENGTH);
+
+  surveyDescription: FormControl<string> = new FormControl('', {
+    nonNullable: true,
+    validators: [Validators.maxLength(MAX_DESCRIPTION_LENGTH)],
+  });
   surveyDeadline: FormControl<string> =
     new FormControl('', { nonNullable: true });
   questions: FormArray<QuestionForm> =
@@ -100,31 +112,31 @@ export class CreateSurvey implements AfterViewInit, OnDestroy {
   }
 
   /** Opens the created survey and cancels any pending redirect. */
-closeSuccessOverlay(): void {
-  if (this.createdSurveyId === null) {
-    return;
+  closeSuccessOverlay(): void {
+    if (this.createdSurveyId === null) {
+      return;
+    }
+    this.clearRedirectTimer();
+    void this.router.navigate(['/survey', this.createdSurveyId]);
   }
-  this.clearRedirectTimer();
-  void this.router.navigate(['/survey', this.createdSurveyId]);
-}
 
-/** Cancels a scheduled redirect. */
-clearRedirectTimer(): void {
-  if (this.redirectTimer !== null) {
-    clearTimeout(this.redirectTimer);
-    this.redirectTimer = null;
+  /** Cancels a scheduled redirect. */
+  clearRedirectTimer(): void {
+    if (this.redirectTimer !== null) {
+      clearTimeout(this.redirectTimer);
+      this.redirectTimer = null;
+    }
   }
-}
 
-/** Cancels the redirect when the component is removed. */
-ngOnDestroy(): void {
-  this.clearRedirectTimer();
-}
+  /** Cancels the redirect when the component is removed. */
+  ngOnDestroy(): void {
+    this.clearRedirectTimer();
+  }
 
   /** Creates a question with its initial answers and selection mode. */
   createQuestionForm(): QuestionForm {
     return new FormGroup({
-      questionText: this.createRequiredTextControl(),
+      questionText: this.createRequiredTextControl(MAX_QUESTION_LENGTH),
       answers: this.createInitialAnswers(),
       multipleAnswers: new FormControl(false, { nonNullable: true }),
     });
@@ -145,7 +157,7 @@ ngOnDestroy(): void {
     const ANSWERS: FormArray<FormControl<string>> =
       this.getAnswers(questionIndex);
     if (ANSWERS.length < MAX_ANSWERS) {
-      ANSWERS.push(this.createRequiredTextControl());
+    ANSWERS.push(this.createRequiredTextControl(MAX_ANSWER_LENGTH));
     }
   }
 
@@ -176,19 +188,23 @@ ngOnDestroy(): void {
     this.isCategoryDropdownOpen = false;
   }
 
-  /** Creates a text control that rejects empty and whitespace-only values. */
-  createRequiredTextControl(): FormControl<string> {
-    return new FormControl('', {
-      nonNullable: true,
-      validators: [Validators.required, Validators.pattern(/\S/)],
-    });
-  }
+  /** Creates a required text control with a maximum length. */
+private createRequiredTextControl(maxLength: number): FormControl<string> {
+  return new FormControl('', {
+    nonNullable: true,
+    validators: [
+      Validators.required,
+      Validators.pattern(/\S/),
+      Validators.maxLength(maxLength),
+    ],
+  });
+}
 
   /** Creates the minimum number of empty answer controls. */
   createInitialAnswers(): FormArray<FormControl<string>> {
     const ANSWERS: FormControl<string>[] = Array.from(
       { length: MIN_ANSWERS },
-      (): FormControl<string> => this.createRequiredTextControl(),
+      (): FormControl<string> => this.createRequiredTextControl(MAX_ANSWER_LENGTH),
     );
     return new FormArray<FormControl<string>>(ANSWERS);
   }

@@ -23,7 +23,7 @@
                         </label>
 
                         <div class="create-survey__clear-row">
-                            <input type="text" [formControl]="surveyName" id="survey-name" class="create-survey__input">
+                            <input type="text" [formControl]="surveyName" id="survey-name" [maxlength]="maxTitleLength" class="create-survey__input">
 
                             <button class="create-survey__delete" type="button" (click)="surveyName.setValue('')"
                                 aria-label="Clear survey name">
@@ -106,7 +106,7 @@
                         </label>
 
                         <div class="create-survey__clear-row">
-                            <textarea [formControl]="surveyDescription" id="survey-description"
+                            <textarea [formControl]="surveyDescription" id="survey-description" [maxlength]="maxDescriptionLength"
                                 class="create-survey__textarea"></textarea>
 
                             <button class="create-survey__delete" type="button" (click)="surveyDescription.setValue('')"
@@ -126,7 +126,7 @@
                     </legend>
 
                     <div class="create-survey__question-row">
-                        <input formControlName="questionText" class="create-survey__input" type="text"
+                        <input formControlName="questionText" [maxlength]="maxQuestionLength" class="create-survey__input" type="text"
                             id="question-{{questionIndex + 1}}-text"
                             aria-labelledby="question-{{questionIndex + 1}}-heading"
                             placeholder="Which date would work best for you?">
@@ -165,7 +165,7 @@
 
                                 <input class="create-survey__input" type="text"
                                     id="question-{{questionIndex + 1}}-answer-{{answerIndex + 1}}"
-                                    [formControlName]="answerIndex">
+                                    [formControlName]="answerIndex" [maxlength]="maxAnswerLength">
 
                                 <button class="create-survey__delete" type="button"
                                     (click)="removeAnswer(questionIndex, answerIndex)"
