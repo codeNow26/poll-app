@@ -1,16 +1,19 @@
-<main class="create-survey">
-    <header class="create-survey__header">
+<dialog #surveyDialog class="create-survey" aria-labelledby="create-survey-title"
+    (cancel)="$event.preventDefault(); cancelSurvey()">
+    <header class="create-survey__header" [inert]="isSuccessOverlayOpen()">
         <div class="create-survey__header-left">
             <p class="create-survey__draft">Draft</p>
-            <h1 class="create-survey__title">Create new survey</h1>
+            <h1 id="create-survey-title" class="create-survey__title" tabindex="-1" autofocus>
+                Create new survey
+            </h1>
         </div>
 
-        <button class="create-survey__cancel" type="button" routerLink="/">
+        <button class="create-survey__cancel" type="button" (click)="cancelSurvey()">
             Cancel <span aria-hidden="true">×</span>
         </button>
     </header>
 
-    <form [formGroup]="surveyForm" (ngSubmit)="submitSurvey()" id="survey-form" class="create-survey__form">
+    <form [formGroup]="surveyForm" (ngSubmit)="submitSurvey()" [inert]="isSuccessOverlayOpen()" id="survey-form" class="create-survey__form">
         <div class="create-survey__form-content">
             <div class="create-survey__details">
                 <div class="create-survey__details-left">
@@ -213,4 +216,4 @@
         </div>
     </div>
     }
-</main>
+</dialog>

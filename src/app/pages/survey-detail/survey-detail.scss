@@ -20,6 +20,12 @@
     gap: 24px;
     padding-block: 32px;
 
+    &__create {
+        border: none;
+        font-family: inherit;
+        cursor: pointer;
+    }
+
     &__brand {
         display: inline-flex;
         align-items: center;

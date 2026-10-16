@@ -4,19 +4,25 @@
 
 :host {
   display: block;
-  min-height: 100vh;
-  padding: 64px 32px;
-  background-color: #fffcff;
-  color: #fff;
 }
 
 .create-survey {
-  width: 100%;
+  box-sizing: border-box;
+  width: calc(100% - 64px);
   max-width: 1100px;
-  margin-inline: auto;
+  max-height: calc(100dvh - 64px);
+  margin: auto;
   padding: 40px 56px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  border: none;
   border-radius: 0 96px 0 0;
   background-color: #35273a;
+  color: #fff;
+
+  &::backdrop {
+    background-color: rgb(0 0 0 / 55%);
+  }
 
   &__header {
     display: flex;
@@ -188,13 +194,12 @@
 }
 
 @media (max-width: 700px) {
-  :host {
-    padding: 24px 16px;
-  }
 
   .create-survey {
     padding: 28px 20px;
     border-top-right-radius: 64px;
+    width: calc(100% - 16px);
+    max-height: calc(100dvh - 16px);
 
     &__header {
       align-items: flex-start;

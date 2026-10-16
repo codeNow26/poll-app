@@ -13,7 +13,9 @@
                 <p class="hero-left__description">Create and share surveys in minutes - from team events to
                     workplace culture. Collect opinions, engage
                     your audience, and turn feedback into action.</p>
-                <button type="button" class="hero-left__button" routerLink="/create-survey">New Survey</button>
+                <button type="button" class="hero-left__button" (click)="isCreateSurveyOpen.set(true)">
+                    New Survey
+                </button>
             </div>
 
             <div class="hero-right" aria-hidden="true">
@@ -104,3 +106,9 @@
         }
     </section>
 </main>
+
+@if (isCreateSurveyOpen()) {
+  <app-create-survey
+    (cancelled)="isCreateSurveyOpen.set(false)"
+  />
+}

@@ -20,3 +20,7 @@ h2 {
   font-family: 'Nerko One', cursive;
   font-weight: 400;
 }
+
+body:has(dialog[open]) {
+  overflow: hidden;
+}

@@ -3,6 +3,7 @@ import { RouterLink } from '@angular/router';
 import { SurveyCard } from '../../components/survey-card/survey-card';
 import { SavedSurvey } from '../../models/survey.model/survey.model';
 import { Supabase } from '../../services/supabase';
+import { CreateSurvey } from '../create-survey/create-survey';
 
 type SurveyTab = 'active' | 'past';
 type CategoryFilter =
@@ -18,7 +19,7 @@ const ENDING_SOON_LIMIT: number = 3;
 
 @Component({
   selector: 'app-home',
-  imports: [SurveyCard, RouterLink],
+ imports: [SurveyCard, RouterLink, CreateSurvey],
   templateUrl: './home.html',
   styleUrl: './home.scss',
 })
@@ -40,6 +41,7 @@ export class Home implements OnInit {
   selectedTab: SurveyTab = 'active';
   selectedCategory: CategoryFilter = 'All Surveys';
   isCategoryDropdownOpen: boolean = false;
+  isCreateSurveyOpen: WritableSignal<boolean> = signal(false);
 
   /** Loads and groups the surveys when the home page opens. */
   async ngOnInit(): Promise<void> {

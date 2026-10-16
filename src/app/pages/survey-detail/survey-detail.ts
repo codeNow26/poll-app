@@ -3,6 +3,7 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { SavedSurvey } from '../../models/survey.model/survey.model';
 import { SurveyVote } from '../../models/survey-vote.model';
 import { Supabase } from '../../services/supabase';
+import { CreateSurvey } from '../create-survey/create-survey';
 
 type VotesChannel = ReturnType<Supabase['subscribeToVotes']>;
 const PERCENTAGE_FACTOR: number = 100;
@@ -10,7 +11,7 @@ const VOTE_STORAGE_PREFIX: string = 'voted-survey-';
 
 @Component({
   selector: 'app-survey-detail',
-  imports: [RouterLink],
+  imports: [RouterLink, CreateSurvey],
   templateUrl: './survey-detail.html',
   styleUrl: './survey-detail.scss',
 })
@@ -20,6 +21,7 @@ export class SurveyDetail implements OnInit, OnDestroy {
   supabase: Supabase = inject(Supabase);
   votesChannel: VotesChannel | null = null;
   isDestroyed: boolean = false;
+  isCreateSurveyOpen: WritableSignal<boolean> = signal(false);
 
   survey: WritableSignal<SavedSurvey | null> =
     signal<SavedSurvey | null>(null);

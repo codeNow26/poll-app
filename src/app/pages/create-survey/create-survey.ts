@@ -1,6 +1,6 @@
-import { Component, inject, signal, WritableSignal } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, inject, OnDestroy, output, signal, viewChild, WritableSignal } from '@angular/core';
 import { FormArray, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { Survey } from '../../models/survey.model/survey.model';
 import { Supabase } from '../../services/supabase';
 
@@ -29,17 +29,36 @@ type SurveyForm = FormGroup<{
 const MIN_ANSWERS: number = 2;
 const MAX_ANSWERS: number = 6;
 const MIN_QUESTIONS: number = 1;
+const SUCCESS_REDIRECT_DELAY: number = 2000;
 
 @Component({
   selector: 'app-create-survey',
-  imports: [RouterLink, ReactiveFormsModule],
+  imports: [ReactiveFormsModule],
   templateUrl: './create-survey.html',
   styleUrl: './create-survey.scss',
 })
-export class CreateSurvey {
-  private supabase: Supabase = inject(Supabase);
-  private router: Router = inject(Router);
-  private isSaving: boolean = false;
+export class CreateSurvey implements AfterViewInit, OnDestroy {
+  cancelled = output<void>();
+  surveyDialog = viewChild.required<ElementRef<HTMLDialogElement>>('surveyDialog');
+  redirectTimer: ReturnType<typeof setTimeout> | null = null;
+
+  /** Opens the form as a modal after its view is ready. */
+  ngAfterViewInit(): void {
+    this.surveyDialog().nativeElement.showModal();
+  }
+
+  /** Closes the form unless saving or confirmation is in progress. */
+  cancelSurvey(): void {
+    if (this.isSaving || this.isSuccessOverlayOpen()) {
+      return;
+    }
+    this.surveyDialog().nativeElement.close();
+    this.cancelled.emit();
+  }
+
+  supabase: Supabase = inject(Supabase);
+  router: Router = inject(Router);
+  isSaving: boolean = false;
 
   surveyName: FormControl<string> = this.createRequiredTextControl();
   surveyDescription: FormControl<string> =
@@ -80,13 +99,27 @@ export class CreateSurvey {
     await this.saveSurvey(this.createSurveyData());
   }
 
-  /** Opens the newly created survey after the confirmation is closed. */
-  closeSuccessOverlay(): void {
-    if (this.createdSurveyId === null) {
-      return;
-    }
-    void this.router.navigate(['/survey', this.createdSurveyId]);
+  /** Opens the created survey and cancels any pending redirect. */
+closeSuccessOverlay(): void {
+  if (this.createdSurveyId === null) {
+    return;
   }
+  this.clearRedirectTimer();
+  void this.router.navigate(['/survey', this.createdSurveyId]);
+}
+
+/** Cancels a scheduled redirect. */
+clearRedirectTimer(): void {
+  if (this.redirectTimer !== null) {
+    clearTimeout(this.redirectTimer);
+    this.redirectTimer = null;
+  }
+}
+
+/** Cancels the redirect when the component is removed. */
+ngOnDestroy(): void {
+  this.clearRedirectTimer();
+}
 
   /** Creates a question with its initial answers and selection mode. */
   createQuestionForm(): QuestionForm {
@@ -144,7 +177,7 @@ export class CreateSurvey {
   }
 
   /** Creates a text control that rejects empty and whitespace-only values. */
-  private createRequiredTextControl(): FormControl<string> {
+  createRequiredTextControl(): FormControl<string> {
     return new FormControl('', {
       nonNullable: true,
       validators: [Validators.required, Validators.pattern(/\S/)],
@@ -152,7 +185,7 @@ export class CreateSurvey {
   }
 
   /** Creates the minimum number of empty answer controls. */
-  private createInitialAnswers(): FormArray<FormControl<string>> {
+  createInitialAnswers(): FormArray<FormControl<string>> {
     const ANSWERS: FormControl<string>[] = Array.from(
       { length: MIN_ANSWERS },
       (): FormControl<string> => this.createRequiredTextControl(),
@@ -161,7 +194,7 @@ export class CreateSurvey {
   }
 
   /** Converts the form values into the survey model. */
-  private createSurveyData(): Survey {
+  createSurveyData(): Survey {
     const FORM_VALUE: ReturnType<SurveyForm['getRawValue']> =
       this.surveyForm.getRawValue();
     return {
@@ -174,11 +207,15 @@ export class CreateSurvey {
   }
 
   /** Saves the survey and opens the confirmation after success. */
-  private async saveSurvey(survey: Survey): Promise<void> {
+  async saveSurvey(survey: Survey): Promise<void> {
     this.isSaving = true;
     try {
       this.createdSurveyId = await this.supabase.saveSurvey(survey);
       this.isSuccessOverlayOpen.set(true);
+      this.redirectTimer = setTimeout(
+        (): void => this.closeSuccessOverlay(),
+        SUCCESS_REDIRECT_DELAY,
+      );
     } catch (error: unknown) {
       console.error('Survey could not be saved:', error);
     } finally {

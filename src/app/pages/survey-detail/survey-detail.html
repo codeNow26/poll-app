@@ -4,9 +4,9 @@
         <span>Poll<br>App</span>
     </a>
 
-    <a class="detail-header__create" routerLink="/create-survey">
+    <button class="detail-header__create" type="button" (click)="isCreateSurveyOpen.set(true)">
         Create survey
-    </a>
+    </button>
 </header>
 
 <main class="survey-detail">
@@ -152,3 +152,9 @@
     <p>Noch keine Umfrage angezeigt.</p>
     }
 </main>
+
+@if (isCreateSurveyOpen()) {
+  <app-create-survey
+    (cancelled)="isCreateSurveyOpen.set(false)"
+  />
+}
