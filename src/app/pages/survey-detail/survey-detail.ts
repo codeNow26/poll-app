@@ -1,11 +1,21 @@
-import { Component, inject, OnDestroy, OnInit, signal, WritableSignal } from '@angular/core';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import {
+  Component,
+  inject,
+  OnDestroy,
+  OnInit,
+  signal,
+  WritableSignal,
+} from '@angular/core';
+import { ActivatedRoute, ParamMap, RouterLink } from '@angular/router';
+import { Subscription } from 'rxjs';
+
 import { SavedSurvey } from '../../models/survey.model/survey.model';
 import { SurveyVote } from '../../models/survey-vote.model';
 import { Supabase } from '../../services/supabase';
 import { CreateSurvey } from '../create-survey/create-survey';
 
 type VotesChannel = ReturnType<Supabase['subscribeToVotes']>;
+
 const PERCENTAGE_FACTOR: number = 100;
 const VOTE_STORAGE_PREFIX: string = 'voted-survey-';
 
@@ -15,18 +25,18 @@ const VOTE_STORAGE_PREFIX: string = 'voted-survey-';
   templateUrl: './survey-detail.html',
   styleUrl: './survey-detail.scss',
 })
-
 export class SurveyDetail implements OnInit, OnDestroy {
   route: ActivatedRoute = inject(ActivatedRoute);
   supabase: Supabase = inject(Supabase);
+
+  routeSubscription: Subscription | null = null;
   votesChannel: VotesChannel | null = null;
   isDestroyed: boolean = false;
-  isCreateSurveyOpen: WritableSignal<boolean> = signal(false);
+  loadVersion: number = 0;
 
-  survey: WritableSignal<SavedSurvey | null> =
-    signal<SavedSurvey | null>(null);
-  savedVotes: WritableSignal<SurveyVote[]> =
-    signal<SurveyVote[]>([]);
+  isCreateSurveyOpen: WritableSignal<boolean> = signal(false);
+  survey: WritableSignal<SavedSurvey | null> = signal(null);
+  savedVotes: WritableSignal<SurveyVote[]> = signal([]);
   showSaveError: WritableSignal<boolean> = signal(false);
   isSaving: WritableSignal<boolean> = signal(false);
   hasVoted: WritableSignal<boolean> = signal(false);
@@ -34,129 +44,93 @@ export class SurveyDetail implements OnInit, OnDestroy {
   selectedAnswers: number[][] = [];
   showAnswerError: boolean = false;
 
-  /** Reads the survey ID and starts loading the detail page. */
-  async ngOnInit(): Promise<void> {
-    const SURVEY_ID: number | null = this.getSurveyId();
-    if (SURVEY_ID === null) {
-      return;
-    }
-    this.restoreVotingStatus(SURVEY_ID);
-    await this.loadSurveyDetails(SURVEY_ID);
+  /** Loads the survey whenever its route ID changes. */
+  ngOnInit(): void {
+    this.routeSubscription = this.route.paramMap.subscribe(
+      (params: ParamMap): void => {
+        void this.changeSurvey(params.get('id'));
+      },
+    );
   }
 
-  /** Removes the realtime subscription when the component is destroyed. */
+  /** Removes subscriptions and ignores pending responses after destruction. */
   ngOnDestroy(): void {
     this.isDestroyed = true;
-    if (this.votesChannel !== null) {
-      void this.supabase.client.removeChannel(this.votesChannel);
-      this.votesChannel = null;
-    }
+    this.routeSubscription?.unsubscribe();
+    void this.removeVotesChannel();
   }
 
-  /** Updates an answer selection if voting is still allowed. */
-  selectAnswer(questionIndex: number, answerIndex: number, isChecked: boolean,): void {
-    const CURRENT_SURVEY: SavedSurvey | null = this.survey();
-    if (CURRENT_SURVEY === null || this.isVotingBlocked()) {
+  /** Clears the previous survey before loading the requested one. */
+  async changeSurvey(routeId: string | null): Promise<void> {
+    const version: number = ++this.loadVersion;
+    this.resetSurveyState();
+    await this.removeVotesChannel();
+    const surveyId: number | null = this.getSurveyId(routeId);
+    if (surveyId === null || !this.isCurrentLoad(version)) {
       return;
     }
-    if (!CURRENT_SURVEY.questions[questionIndex].multipleAnswers) {
-      this.selectedAnswers[questionIndex] = [answerIndex];
-      return;
-    }
-    this.updateMultipleAnswers(questionIndex, answerIndex, isChecked);
+    this.restoreVotingStatus(surveyId);
+    await this.loadSurveyDetails(surveyId, version);
   }
 
-  /** Validates the answers and starts saving the votes. */
-  async submitAnswers(): Promise<void> {
-    if (this.isVotingBlocked()) {
-      return;
-    }
+  /** Resets the dialog, answers, results, and submission state. */
+  resetSurveyState(): void {
+    this.isCreateSurveyOpen.set(false);
+    this.survey.set(null);
+    this.savedVotes.set([]);
+    this.selectedAnswers = [];
+    this.hasVoted.set(false);
+    this.isSaving.set(false);
     this.showSaveError.set(false);
     this.showAnswerError = false;
-    const CURRENT_SURVEY: SavedSurvey | null = this.survey();
-    if (CURRENT_SURVEY === null || !this.validateAnswers(CURRENT_SURVEY)) {
+  }
+
+  /** Stops listening for votes from the previous survey. */
+  async removeVotesChannel(): Promise<void> {
+    const channel: VotesChannel | null = this.votesChannel;
+    this.votesChannel = null;
+    if (channel === null) {
       return;
     }
-    await this.saveSubmission(CURRENT_SURVEY);
-  }
-
-  /** Counts votes for a specific answer to a question. */
-  getAnswerVoteCount(questionId: number, answerIndex: number): number {
-    let count: number = 0;
-    for (const VOTE of this.savedVotes()) {
-      if (
-        VOTE.question_id === questionId &&
-        VOTE.answer_indices.includes(answerIndex)
-      ) {
-        count++;
-      }
+    try {
+      await this.supabase.client.removeChannel(channel);
+    } catch (error: unknown) {
+      console.error('Realtime subscription could not be removed:', error);
     }
-    return count;
   }
 
-  /** Counts submitted votes for a question. */
-  getQuestionVoteCount(questionId: number): number {
-    let count: number = 0;
-    for (const VOTE of this.savedVotes()) {
-      if (VOTE.question_id === questionId) {
-        count++;
-      }
-    }
-    return count;
+  /** Checks whether a response still belongs to the current page load. */
+  isCurrentLoad(version: number): boolean {
+    return !this.isDestroyed && version === this.loadVersion;
   }
 
-  /** Calculates the rounded vote percentage for an answer. */
-  getAnswerPercentage(questionId: number, answerIndex: number): number {
-    const TOTAL_VOTES: number = this.getQuestionVoteCount(questionId);
-    if (TOTAL_VOTES === 0) {
-      return 0;
-    }
-    const ANSWER_VOTES: number =
-      this.getAnswerVoteCount(questionId, answerIndex);
-    return Math.round((ANSWER_VOTES / TOTAL_VOTES) * PERCENTAGE_FACTOR);
-  }
-
-  /** Checks whether the deadline is before the current local day. */
-  isSurveyExpired(): boolean {
-    const CURRENT_SURVEY: SavedSurvey | null = this.survey();
-    if (CURRENT_SURVEY === null || CURRENT_SURVEY.deadline === null) {
-      return false;
-    }
-    const TODAY: Date = new Date();
-    TODAY.setHours(0, 0, 0, 0);
-    const DEADLINE: Date = new Date(
-      CURRENT_SURVEY.deadline + 'T00:00:00',
-    );
-    return TODAY > DEADLINE;
-  }
-
-  /** Reads a valid positive survey ID from the URL. */
-  getSurveyId(): number | null {
-    const ROUTE_ID: string | null =
-      this.route.snapshot.paramMap.get('id');
-    if (ROUTE_ID === null) {
+  /** Converts a route parameter into a valid positive survey ID. */
+  getSurveyId(routeId: string | null): number | null {
+    if (routeId === null) {
       return null;
     }
-    const SURVEY_ID: number = Number(ROUTE_ID);
-    return Number.isSafeInteger(SURVEY_ID) && SURVEY_ID > 0 ? SURVEY_ID : null;
+    const surveyId: number = Number(routeId);
+    return Number.isSafeInteger(surveyId) && surveyId > 0
+      ? surveyId
+      : null;
   }
 
-  /** Loads the survey and prepares answer selections and results. */
-  async loadSurveyDetails(surveyId: number): Promise<void> {
+  /** Loads the requested survey and prepares its results. */
+  async loadSurveyDetails(surveyId: number, version: number): Promise<void> {
     try {
-      const LOADED_SURVEY: SavedSurvey =
+      const loadedSurvey: SavedSurvey =
         await this.supabase.loadSurvey(surveyId);
-      if (this.isDestroyed) {
+      if (!this.isCurrentLoad(version)) {
         return;
       }
-      this.initializeSurvey(LOADED_SURVEY);
-      await this.initializeResults(LOADED_SURVEY);
+      this.initializeSurvey(loadedSurvey);
+      await this.initializeResults(loadedSurvey, version);
     } catch (error: unknown) {
-      console.error('Umfrage konnte nicht geladen werden:', error);
+      console.error('Survey could not be loaded:', error);
     }
   }
 
-  /** Initializes an empty answer selection for each question. */
+  /** Creates an empty answer selection for each question. */
   initializeSurvey(loadedSurvey: SavedSurvey): void {
     this.selectedAnswers = loadedSurvey.questions.map(
       (): number[] => [],
@@ -164,55 +138,85 @@ export class SurveyDetail implements OnInit, OnDestroy {
     this.survey.set(loadedSurvey);
   }
 
-  /** Starts the realtime subscription and loads existing votes. */
-  async initializeResults(loadedSurvey: SavedSurvey): Promise<void> {
-    const QUESTION_IDS: number[] = this.getQuestionIds(loadedSurvey);
+  /** Starts the live subscription and loads existing votes. */
+  async initializeResults(survey: SavedSurvey, version: number): Promise<void> {
+    const questionIds: number[] = this.getQuestionIds(survey);
     this.votesChannel = this.supabase.subscribeToVotes(
       (): void => {
-        void this.refreshVotes(QUESTION_IDS);
+        if (this.isCurrentLoad(version)) {
+          void this.refreshVotes(questionIds, version);
+        }
       },
     );
-    await this.refreshVotes(QUESTION_IDS);
+    await this.refreshVotes(questionIds, version);
   }
 
-  /** Returns the IDs of all questions in a survey. */
-  getQuestionIds(loadedSurvey: SavedSurvey): number[] {
-    return loadedSurvey.questions.map(
+  /** Returns all question IDs belonging to a survey. */
+  getQuestionIds(survey: SavedSurvey): number[] {
+    return survey.questions.map(
       (question): number => question.id,
     );
   }
 
-  /** Refreshes results and handles loading errors separately from saving. */
-  async refreshVotes(questionIds: number[]): Promise<void> {
+  /** Updates results only if they still belong to the current survey. */
+  async refreshVotes(questionIds: number[], version: number): Promise<void> {
     try {
-      const LOADED_VOTES: SurveyVote[] =
+      const loadedVotes: SurveyVote[] =
         await this.supabase.loadVotes(questionIds);
-      if (!this.isDestroyed) {
-        this.savedVotes.set(LOADED_VOTES);
+      if (this.isCurrentLoad(version)) {
+        this.savedVotes.set(loadedVotes);
       }
     } catch (error: unknown) {
-      console.error('Ergebnisse konnten nicht geladen werden:', error);
+      console.error('Results could not be loaded:', error);
     }
   }
 
-  /** Checks whether changing answers or submitting votes is blocked. */
-  isVotingBlocked(): boolean {
-    return this.isSaving() || this.hasVoted() || this.isSurveyExpired();
+  /** Updates an answer selection while voting is allowed. */
+  selectAnswer(questionIndex: number, answerIndex: number, isChecked: boolean): void {
+    const currentSurvey: SavedSurvey | null = this.survey();
+    if (currentSurvey === null || this.isVotingBlocked()) {
+      return;
+    }
+    if (!currentSurvey.questions[questionIndex].multipleAnswers) {
+      this.selectedAnswers[questionIndex] = [answerIndex];
+      return;
+    }
+    this.updateMultipleAnswers(questionIndex, answerIndex, isChecked);
   }
 
-  /** Adds or removes an answer in a multiple-choice selection. */
+  /** Adds or removes an answer without creating duplicate selections. */
   updateMultipleAnswers(
     questionIndex: number,
     answerIndex: number,
     isChecked: boolean,
   ): void {
-    const ANSWERS: number[] = this.selectedAnswers[questionIndex] ?? [];
-    const OTHER_ANSWERS: number[] = ANSWERS.filter(
+    const answers: number[] = this.selectedAnswers[questionIndex] ?? [];
+    const otherAnswers: number[] = answers.filter(
       (selectedIndex: number): boolean => selectedIndex !== answerIndex,
     );
     this.selectedAnswers[questionIndex] = isChecked
-      ? [...OTHER_ANSWERS, answerIndex]
-      : OTHER_ANSWERS;
+      ? [...otherAnswers, answerIndex]
+      : otherAnswers;
+  }
+
+  /** Checks whether changing or submitting answers is blocked. */
+  isVotingBlocked(): boolean {
+    return this.survey() === null ||
+      this.isSaving() || this.hasVoted() || this.isSurveyExpired();
+  }
+
+  /** Validates the selected answers and saves the submission. */
+  async submitAnswers(): Promise<void> {
+    if (this.isVotingBlocked()) {
+      return;
+    }
+    this.showSaveError.set(false);
+    this.showAnswerError = false;
+    const currentSurvey: SavedSurvey | null = this.survey();
+    if (currentSurvey === null || !this.validateAnswers(currentSurvey)) {
+      return;
+    }
+    await this.saveSubmission(currentSurvey);
   }
 
   /** Checks whether every question has at least one selected answer. */
@@ -224,7 +228,7 @@ export class SurveyDetail implements OnInit, OnDestroy {
     return !this.showAnswerError;
   }
 
-  /** Builds the votes to save from the current answer selections. */
+  /** Builds the vote records from the current answer selections. */
   createVotes(currentSurvey: SavedSurvey): SurveyVote[] {
     return currentSurvey.questions.map(
       (question, questionIndex: number): SurveyVote => ({
@@ -234,31 +238,96 @@ export class SurveyDetail implements OnInit, OnDestroy {
     );
   }
 
-  /** Saves the submission and always resets the saving state. */
+  /** Saves votes without changing the state of a different survey. */
   async saveSubmission(currentSurvey: SavedSurvey): Promise<void> {
+    const version: number = this.loadVersion;
     this.isSaving.set(true);
     try {
       await this.supabase.saveVotes(this.createVotes(currentSurvey));
-      this.hasVoted.set(true);
       this.storeVotingStatus(currentSurvey.id);
+      await this.finishSubmission(currentSurvey, version);
     } catch (error: unknown) {
-      this.showSaveError.set(true);
-      console.error('Stimmen konnten nicht gespeichert werden:', error);
-      return;
+      this.handleSaveError(error, version);
     } finally {
-      this.isSaving.set(false);
+      if (this.isCurrentLoad(version)) {
+        this.isSaving.set(false);
+      }
     }
-    await this.refreshVotes(this.getQuestionIds(currentSurvey));
   }
 
-  /** Restores the survey's voting status from local storage. */
+  /** Marks a successful submission and refreshes its results. */
+  async finishSubmission(survey: SavedSurvey, version: number): Promise<void> {
+    if (!this.isCurrentLoad(version)) {
+      return;
+    }
+    this.hasVoted.set(true);
+    await this.refreshVotes(this.getQuestionIds(survey), version);
+  }
+
+  /** Shows a save error only for the survey that is still displayed. */
+  handleSaveError(error: unknown, version: number): void {
+    if (this.isCurrentLoad(version)) {
+      this.showSaveError.set(true);
+    }
+    console.error('Votes could not be saved:', error);
+  }
+
+  /** Counts votes for one answer to a question. */
+  getAnswerVoteCount(questionId: number, answerIndex: number): number {
+    let count: number = 0;
+    for (const vote of this.savedVotes()) {
+      if (
+        vote.question_id === questionId &&
+        vote.answer_indices.includes(answerIndex)
+      ) {
+        count++;
+      }
+    }
+    return count;
+  }
+
+  /** Counts submitted votes for a question. */
+  getQuestionVoteCount(questionId: number): number {
+    let count: number = 0;
+    for (const vote of this.savedVotes()) {
+      if (vote.question_id === questionId) {
+        count++;
+      }
+    }
+    return count;
+  }
+
+  /** Calculates the rounded percentage for an answer. */
+  getAnswerPercentage(questionId: number, answerIndex: number): number {
+    const totalVotes: number = this.getQuestionVoteCount(questionId);
+    if (totalVotes === 0) {
+      return 0;
+    }
+    const answerVotes: number =
+      this.getAnswerVoteCount(questionId, answerIndex);
+    return Math.round((answerVotes / totalVotes) * PERCENTAGE_FACTOR);
+  }
+
+  /** Checks whether the deadline is before the current local day. */
+  isSurveyExpired(): boolean {
+    const currentSurvey: SavedSurvey | null = this.survey();
+    if (currentSurvey === null || currentSurvey.deadline === null) {
+      return false;
+    }
+    const today: Date = new Date();
+    today.setHours(0, 0, 0, 0);
+    const deadline: Date = new Date(currentSurvey.deadline + 'T00:00:00');
+    return today > deadline;
+  }
+
+  /** Restores the voting status saved in this browser. */
   restoreVotingStatus(surveyId: number): void {
     try {
-      const STORED_STATUS: string | null =
+      const storedStatus: string | null =
         localStorage.getItem(VOTE_STORAGE_PREFIX + surveyId);
-      this.hasVoted.set(STORED_STATUS === 'true');
+      this.hasVoted.set(storedStatus === 'true');
     } catch (error: unknown) {
-      console.error('Abstimmungsstatus konnte nicht gelesen werden:', error);
+      console.error('Voting status could not be read:', error);
     }
   }
 
@@ -267,7 +336,7 @@ export class SurveyDetail implements OnInit, OnDestroy {
     try {
       localStorage.setItem(VOTE_STORAGE_PREFIX + surveyId, 'true');
     } catch (error: unknown) {
-      console.error('Abstimmungsstatus konnte nicht gespeichert werden:', error);
+      console.error('Voting status could not be saved:', error);
     }
   }
 }
