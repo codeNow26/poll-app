@@ -3,7 +3,7 @@
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 64px;
-    margin-bottom: 56px;
+    margin-bottom: 24px;
   }
 
   &__details-left,
@@ -16,7 +16,7 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
     align-items: start;
     gap: 16px;
-    margin-top: 12px;
+    margin-top: 4px;
   }
 
   &__field {
@@ -27,11 +27,11 @@
   }
 
   &__label {
-    font-size: 14px;
+    font-size: 16px;
     line-height: 1.4;
 
     span {
-      font-size: 12px;
+      font-size: 16px;
     }
   }
 
@@ -45,7 +45,7 @@
     background-color: #fffcff;
     color: #35273a;
     font: inherit;
-    font-size: 14px;
+    font-size: 16px;
     line-height: 1.4;
 
     &::placeholder {
@@ -99,7 +99,7 @@
     background: transparent;
     color: #fff;
     font: inherit;
-    font-size: 13px;
+    font-size: 16px;
     text-align: left;
     cursor: pointer;
     transition: background-color 180ms ease;
@@ -152,7 +152,7 @@
       background: transparent;
       color: #fff;
       font: inherit;
-      font-size: 14px;
+      font-size: 16px;
       text-align: left;
       cursor: pointer;
 
@@ -178,11 +178,11 @@
   }
 }
 
-@media (max-width: 700px) {
+@media (max-width: 900px) {
   .create-survey__details {
     grid-template-columns: 1fr;
     gap: 32px;
-    margin-bottom: 40px;
+   margin-bottom: 24px;
   }
 }
 

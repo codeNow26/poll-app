@@ -38,7 +38,7 @@
     padding: 3px 8px;
     background-color: #ffd0a1;
     color: #35273a;
-    font-size: 12px;
+    font-size: 16px;
   }
 
   &__title {
@@ -61,7 +61,7 @@
     background-color: #80665f;
     color: #fff;
     font: inherit;
-    font-size: 14px;
+    font-size: 16px;
     cursor: pointer;
 
     &:hover {
@@ -168,8 +168,12 @@
   &__error {
     margin: 4px 0 0;
     color: #ffb3b3;
-    font-size: 12px;
+    font-size: 16px;
     line-height: 1.4;
+
+    &--hidden {
+      visibility: hidden;
+    }
   }
 
   button:disabled {
@@ -182,6 +186,8 @@
     outline-offset: 3px;
   }
 }
+
+
 
 @media (max-width: 900px) {
   .create-survey {
@@ -217,6 +223,29 @@
 
     &__actions {
       margin-top: 24px;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .create-survey {
+    padding: 20px 8px;
+    border-top-right-radius: 40px;
+
+    &__header {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    &__cancel {
+      align-self: flex-end;
+    }
+
+    &__form-content {
+      padding: 24px 8px;
+      border-top-right-radius: 32px;
     }
   }
 }

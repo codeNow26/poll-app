@@ -16,7 +16,7 @@
   &__question-heading {
     margin-bottom: 8px;
     padding: 0;
-    font-size: 14px;
+    font-size: 16px;
     line-height: 1.4;
   }
 
@@ -27,7 +27,7 @@
   }
 
   &__answers {
-    margin-top: 20px;
+    margin-top: 4px;
   }
 
   &__answers-header {
@@ -41,7 +41,7 @@
 
     p {
       margin: 0;
-      font-size: 14px;
+      font-size: 16px;
     }
   }
 
@@ -49,7 +49,7 @@
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    font-size: 11px;
+    font-size: 16px;
     cursor: pointer;
 
     input {
@@ -99,8 +99,9 @@
     display: grid;
     grid-template-columns: 18px minmax(0, 1fr) 24px;
     align-items: center;
-    gap: 8px;
-    margin-bottom: 8px;
+    column-gap: 8px;
+    row-gap: 0;
+    margin-bottom: 4px;
 
     .create-survey__error {
       grid-column: 2 / -1;
@@ -108,7 +109,7 @@
   }
 
   &__answer-label {
-    font-size: 14px;
+    font-size: 16px;
   }
 
   &__add-answer-btn,
@@ -126,13 +127,13 @@
   }
 
   &__add-answer-btn {
-    margin: 12px 0 0 26px;
+    margin: 4px 0 0 26px;
     padding: 0;
     border: none;
     background: transparent;
     color: #fff;
     font: inherit;
-    font-size: 13px;
+    font-size: 16px;
     text-decoration: underline;
     text-underline-offset: 3px;
     cursor: pointer;
@@ -153,7 +154,7 @@
   }
 }
 
-@media (max-width: 700px) {
+@media (max-width: 900px) {
   .create-survey__questions {
     grid-template-columns: 1fr;
     gap: 32px;
@@ -161,6 +162,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+
   .create-survey__multiple input,
   .create-survey__multiple input::after {
     transition: none;

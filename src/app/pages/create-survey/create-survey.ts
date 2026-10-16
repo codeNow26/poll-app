@@ -1,5 +1,8 @@
 import { AfterViewInit, Component, ElementRef, inject, OnDestroy, output, signal, viewChild, WritableSignal } from '@angular/core';
-import { FormArray, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  FormArray, FormControl, FormGroup, ReactiveFormsModule, Validators, AbstractControl,
+  ValidationErrors,
+} from '@angular/forms';
 import { Router } from '@angular/router';
 import { Survey } from '../../models/survey.model/survey.model';
 import { Supabase } from '../../services/supabase';
@@ -75,8 +78,13 @@ export class CreateSurvey implements AfterViewInit, OnDestroy {
     nonNullable: true,
     validators: [Validators.maxLength(MAX_DESCRIPTION_LENGTH)],
   });
-  surveyDeadline: FormControl<string> =
-    new FormControl('', { nonNullable: true });
+  surveyDeadline: FormControl<string> = new FormControl('', {
+    nonNullable: true,
+    validators: [
+      (control: AbstractControl): ValidationErrors | null =>
+        this.validateDeadline(control.value),
+    ],
+  });
   questions: FormArray<QuestionForm> =
     new FormArray<QuestionForm>([this.createQuestionForm()]);
   selectedCategory: FormControl<SurveyCategory | ''> =
@@ -104,6 +112,7 @@ export class CreateSurvey implements AfterViewInit, OnDestroy {
     if (this.isSaving || this.createdSurveyId !== null) {
       return;
     }
+    this.surveyDeadline.updateValueAndValidity();
     if (this.surveyForm.invalid) {
       this.surveyForm.markAllAsTouched();
       return;
@@ -157,7 +166,7 @@ export class CreateSurvey implements AfterViewInit, OnDestroy {
     const ANSWERS: FormArray<FormControl<string>> =
       this.getAnswers(questionIndex);
     if (ANSWERS.length < MAX_ANSWERS) {
-    ANSWERS.push(this.createRequiredTextControl(MAX_ANSWER_LENGTH));
+      ANSWERS.push(this.createRequiredTextControl(MAX_ANSWER_LENGTH));
     }
   }
 
@@ -189,16 +198,16 @@ export class CreateSurvey implements AfterViewInit, OnDestroy {
   }
 
   /** Creates a required text control with a maximum length. */
-private createRequiredTextControl(maxLength: number): FormControl<string> {
-  return new FormControl('', {
-    nonNullable: true,
-    validators: [
-      Validators.required,
-      Validators.pattern(/\S/),
-      Validators.maxLength(maxLength),
-    ],
-  });
-}
+  private createRequiredTextControl(maxLength: number): FormControl<string> {
+    return new FormControl('', {
+      nonNullable: true,
+      validators: [
+        Validators.required,
+        Validators.pattern(/\S/),
+        Validators.maxLength(maxLength),
+      ],
+    });
+  }
 
   /** Creates the minimum number of empty answer controls. */
   createInitialAnswers(): FormArray<FormControl<string>> {
@@ -238,4 +247,36 @@ private createRequiredTextControl(maxLength: number): FormControl<string> {
       this.isSaving = false;
     }
   }
+
+  /** Returns today's date in the local YYYY-MM-DD format. */
+getTodayDate(): string {
+  const today: Date = new Date();
+  const year: number = today.getFullYear();
+  const month: string = String(today.getMonth() + 1).padStart(2, '0');
+  const day: string = String(today.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+/** Checks that the value represents an existing calendar date. */
+isValidDate(value: string): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    return false;
+  }
+  const date: Date = new Date(value + 'T00:00:00');
+  const [year, month, day] = value.split('-').map(Number);
+  return date.getFullYear() === year &&
+    date.getMonth() === month - 1 &&
+    date.getDate() === day;
+}
+
+/** Allows an empty deadline or a valid date from today onward. */
+validateDeadline(value: string): ValidationErrors | null {
+  if (value === '') {
+    return null;
+  }
+  if (!this.isValidDate(value)) {
+    return { invalidDate: true };
+  }
+  return value < this.getTodayDate() ? { pastDate: true } : null;
+}
 }
