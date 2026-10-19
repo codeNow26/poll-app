@@ -3,7 +3,9 @@
   class="create-survey"
   aria-labelledby="create-survey-title"
   (cancel)="$event.preventDefault(); cancelSurvey()"
+  (click)="closeOnBackdropClick($event)"
 >
+
   <header class="create-survey__header" [inert]="isSuccessOverlayOpen()">
     <div class="create-survey__header-left">
       <p class="create-survey__draft">Draft</p>

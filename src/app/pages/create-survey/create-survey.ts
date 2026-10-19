@@ -67,6 +67,21 @@ export class CreateSurvey implements AfterViewInit, OnDestroy {
     this.cancelled.emit();
   }
 
+  /** Closes the dialog when the user clicks outside its bounds. */
+closeOnBackdropClick(event: MouseEvent): void {
+  const dialog: HTMLDialogElement = this.surveyDialog().nativeElement;
+  if (event.target !== dialog) {
+    return;
+  }
+  const bounds: DOMRect = dialog.getBoundingClientRect();
+  const isOutside: boolean =
+    event.clientX < bounds.left || event.clientX > bounds.right ||
+    event.clientY < bounds.top || event.clientY > bounds.bottom;
+  if (isOutside) {
+    this.cancelSurvey();
+  }
+}
+
   supabase: Supabase = inject(Supabase);
   router: Router = inject(Router);
   isSaving: boolean = false;

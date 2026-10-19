@@ -6,34 +6,62 @@
 </header>
 
 <main class="home">
-    <section class="hero">
-        <div class="hero-content">
-            <div class="hero-left">
-                <h1 class="hero-left__title text-primary">Collect Feedback, Unlock Ideas</h1>
-                <p class="hero-left__description">Create and share surveys in minutes - from team events to
-                    workplace culture. Collect opinions, engage
-                    your audience, and turn feedback into action.</p>
-                <button type="button" class="hero-left__button" (click)="isCreateSurveyOpen.set(true)">
-                    New Survey
-                </button>
-            </div>
+   <section class="hero">
+    <div class="hero-content">
+        <div class="hero-left">
+            <h1 class="hero-left__title text-primary">
+                Collect Feedback, Unlock Ideas
+            </h1>
 
-            <div class="hero-right" aria-hidden="true">
-                <img src="assets/images/hero-img.png" alt="" class="hero-right__img">
+            <p class="hero-left__description">
+                Create and share surveys in minutes - from team events to
+                workplace culture. Collect opinions, engage your audience,
+                and turn feedback into action.
+            </p>
 
-                <img src="assets/icons/typing bubble.svg" alt=""
-                    class="hero-right__decoration hero-right__decoration--bubble">
-
-                <img src="assets/icons/Questionmark.svg" alt=""
-                    class="hero-right__decoration hero-right__decoration--question">
-
-                <img src="assets/icons/checkmark.svg" alt=""
-                    class="hero-right__decoration hero-right__decoration--check">
-
-                <img src="assets/icons/star.svg" alt="" class="hero-right__decoration hero-right__decoration--star">
-            </div>
+            <button
+                type="button"
+                class="hero-left__button"
+                (click)="isCreateSurveyOpen.set(true)"
+            >
+                <img src="assets/icons/add_circle_black.svg" alt="">
+                <span>New Survey</span>
+            </button>
         </div>
-    </section>
+
+        <div class="hero-right" aria-hidden="true">
+            <img
+                src="assets/images/hero-img.png"
+                alt=""
+                class="hero-right__img"
+            >
+
+            <img
+                src="assets/icons/typing bubble.svg"
+                alt=""
+                class="hero-right__decoration hero-right__decoration--bubble"
+            >
+
+            <img
+                src="assets/icons/Questionmark.svg"
+                alt=""
+                class="hero-right__decoration hero-right__decoration--question"
+            >
+
+            <img
+                src="assets/icons/checkmark.svg"
+                alt=""
+                class="hero-right__decoration hero-right__decoration--check"
+            >
+
+            <img
+                src="assets/icons/star.svg"
+                alt=""
+                class="hero-right__decoration hero-right__decoration--star"
+            >
+        </div>
+    </div>
+</section>
 
     <section class="survey-section">
         <h2 class="survey-section__title text-primary">Your surveys</h2>

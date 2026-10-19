@@ -30,9 +30,10 @@
     &__category {
         margin: 0 0 8px;
         color: #ffb770;
-        font-size: 12px;
+        font-size: 16px;
         font-weight: 400;
         line-height: 1.4;
+        overflow-wrap: anywhere;
     }
 
     &__title {
@@ -50,7 +51,7 @@
         border-radius: 2px;
         background-color: #ffd0a1;
         color: #35273a;
-        font-size: 12px;
+        font-size: 16px;
         line-height: 1.4;
     }
 
@@ -78,10 +79,12 @@
         }
     }
 
-    @media (max-width: 600px) {
-        .survey-card--featured {
-            min-height: 190px;
-            padding: 24px;
-        }
+
+}
+
+@media (max-width: 600px) {
+    .survey-card--featured {
+        min-height: 190px;
+        padding: 24px;
     }
 }

@@ -19,6 +19,8 @@ yarn-error.log
 *.launch
 .settings/
 *.sublime-workspace
+.editorconfig
+.prettierrc
 
 # Visual Studio Code
 .vscode/
