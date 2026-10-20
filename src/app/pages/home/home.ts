@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal, WritableSignal } from '@angular/core';
+import { Component, ElementRef, inject, OnInit, signal, viewChild, WritableSignal} from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { SurveyCard } from '../../components/survey-card/survey-card';
 import { SavedSurvey } from '../../models/survey.model/survey.model';
@@ -22,6 +22,10 @@ const ENDING_SOON_LIMIT: number = 3;
  imports: [SurveyCard, RouterLink, CreateSurvey],
   templateUrl: './home.html',
   styleUrl: './home.scss',
+  host: {
+  '(window:resize)': 'updateCategoryMenuHeight()',
+  '(window:scroll)': 'updateCategoryMenuHeight()',
+},
 })
 
 export class Home implements OnInit {
@@ -41,6 +45,8 @@ export class Home implements OnInit {
   selectedTab: SurveyTab = 'active';
   selectedCategory: CategoryFilter = 'All Surveys';
   isCategoryDropdownOpen: boolean = false;
+  categoryTrigger = viewChild<ElementRef<HTMLButtonElement>>('categoryTrigger');
+categoryMenuHeight: WritableSignal<number> = signal(260);
   isCreateSurveyOpen: WritableSignal<boolean> = signal(false);
 
   /** Loads and groups the surveys when the home page opens. */
@@ -69,10 +75,26 @@ export class Home implements OnInit {
     this.isCategoryDropdownOpen = false;
   }
 
-  /** Toggles the category dropdown. */
-  toggleCategoryDropdown(): void {
-    this.isCategoryDropdownOpen = !this.isCategoryDropdownOpen;
+ /** Toggles the dropdown and measures the available space below it. */
+toggleCategoryDropdown(): void {
+  this.isCategoryDropdownOpen = !this.isCategoryDropdownOpen;
+  this.updateCategoryMenuHeight();
+}
+
+/** Keeps the dropdown within the viewport while scrolling or resizing. */
+updateCategoryMenuHeight(): void {
+  const trigger: HTMLButtonElement | undefined =
+    this.categoryTrigger()?.nativeElement;
+  if (!this.isCategoryDropdownOpen || !trigger) {
+    return;
   }
+  const menuGap: number = 4;
+  const bottomSpacing: number = 12;
+  const availableHeight: number =
+    window.innerHeight - trigger.getBoundingClientRect().bottom
+    - menuGap - bottomSpacing;
+  this.categoryMenuHeight.set(Math.max(0, Math.min(260, availableHeight)));
+}
 
   /** Returns surveys matching the selected tab and category. */
   getVisibleSurveys(): SavedSurvey[] {

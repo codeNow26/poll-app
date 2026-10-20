@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, inject, OnDestroy, output, signal, viewChild, WritableSignal } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, inject, OnDestroy, OnInit, output, signal, viewChild, WritableSignal } from '@angular/core';
 import {
   FormArray, FormControl, FormGroup, ReactiveFormsModule, Validators, AbstractControl,
   ValidationErrors,
@@ -37,6 +37,10 @@ const MAX_TITLE_LENGTH: number = 100;
 const MAX_DESCRIPTION_LENGTH: number = 1000;
 const MAX_QUESTION_LENGTH: number = 200;
 const MAX_ANSWER_LENGTH: number = 150;
+const SURVEY_DRAFT_KEY: string = 'poll-app-survey-draft';
+
+type SurveyDraft = ReturnType<SurveyForm['getRawValue']>;
+type QuestionDraft = SurveyDraft['questions'][number];
 
 @Component({
   selector: 'app-create-survey',
@@ -44,7 +48,7 @@ const MAX_ANSWER_LENGTH: number = 150;
   templateUrl: './create-survey.html',
   styleUrl: './create-survey.scss',
 })
-export class CreateSurvey implements AfterViewInit, OnDestroy {
+export class CreateSurvey implements OnInit, AfterViewInit, OnDestroy {
   cancelled = output<void>();
   surveyDialog = viewChild.required<ElementRef<HTMLDialogElement>>('surveyDialog');
   redirectTimer: ReturnType<typeof setTimeout> | null = null;
@@ -53,7 +57,12 @@ export class CreateSurvey implements AfterViewInit, OnDestroy {
   maxQuestionLength: number = MAX_QUESTION_LENGTH;
   maxAnswerLength: number = MAX_ANSWER_LENGTH;
 
-  /** Opens the form as a modal after its view is ready. */
+  /** Restores the draft before the form template is initialized. */
+  ngOnInit(): void {
+    this.restoreDraft();
+  }
+
+  /** Opens the dialog once its HTML element is available. */
   ngAfterViewInit(): void {
     this.surveyDialog().nativeElement.showModal();
   }
@@ -63,28 +72,43 @@ export class CreateSurvey implements AfterViewInit, OnDestroy {
     if (this.isSaving || this.isSuccessOverlayOpen()) {
       return;
     }
+    this.saveDraft();
     this.surveyDialog().nativeElement.close();
     this.cancelled.emit();
   }
 
-  /** Closes the dialog when the user clicks outside its bounds. */
-closeOnBackdropClick(event: MouseEvent): void {
-  const dialog: HTMLDialogElement = this.surveyDialog().nativeElement;
-  if (event.target !== dialog) {
-    return;
+  /** Closes only when the interaction starts and ends outside the dialog. */
+  closeOnBackdropClick(event: MouseEvent): void {
+    const shouldClose: boolean =
+      this.pointerStartedOutside && this.isOutsideDialog(event);
+    this.pointerStartedOutside = false;
+    if (shouldClose) {
+      this.cancelSurvey();
+    }
   }
-  const bounds: DOMRect = dialog.getBoundingClientRect();
-  const isOutside: boolean =
-    event.clientX < bounds.left || event.clientX > bounds.right ||
-    event.clientY < bounds.top || event.clientY > bounds.bottom;
-  if (isOutside) {
-    this.cancelSurvey();
+
+/** Tracks outside presses and prevents validation flashes before closing. */
+rememberPointerStart(event: PointerEvent): void {
+  this.pointerStartedOutside = this.isOutsideDialog(event);
+  if (this.pointerStartedOutside) {
+    event.preventDefault();
   }
 }
+
+  /** Checks whether the pointer is outside the dialog's bounds. */
+  isOutsideDialog(event: MouseEvent): boolean {
+    const dialog: HTMLDialogElement = this.surveyDialog().nativeElement;
+    const bounds: DOMRect = dialog.getBoundingClientRect();
+    return event.target === dialog && (
+      event.clientX < bounds.left || event.clientX > bounds.right ||
+      event.clientY < bounds.top || event.clientY > bounds.bottom
+    );
+  }
 
   supabase: Supabase = inject(Supabase);
   router: Router = inject(Router);
   isSaving: boolean = false;
+  pointerStartedOutside: boolean = false;
 
   surveyName: FormControl<string> =
     this.createRequiredTextControl(MAX_TITLE_LENGTH);
@@ -185,20 +209,24 @@ closeOnBackdropClick(event: MouseEvent): void {
     }
   }
 
-  /** Removes an answer while keeping the required minimum. */
-  removeAnswer(questionIndex: number, answerIndex: number): void {
-    const ANSWERS: FormArray<FormControl<string>> =
-      this.getAnswers(questionIndex);
-    if (ANSWERS.length > MIN_ANSWERS) {
-      ANSWERS.removeAt(answerIndex);
-    }
-  }
-
-  /** Removes a question while keeping at least one question. */
+  /** Removes a question or clears its text if it is the last question. */
   removeQuestion(questionIndex: number): void {
     if (this.questions.length > MIN_QUESTIONS) {
       this.questions.removeAt(questionIndex);
+      return;
     }
+    this.questions.at(questionIndex).controls.questionText.reset('');
+  }
+
+  /** Removes an answer or clears its text at the required minimum. */
+  removeAnswer(questionIndex: number, answerIndex: number): void {
+    const answers: FormArray<FormControl<string>> =
+      this.getAnswers(questionIndex);
+    if (answers.length > MIN_ANSWERS) {
+      answers.removeAt(answerIndex);
+      return;
+    }
+    answers.at(answerIndex).reset('');
   }
 
   /** Toggles the category dropdown. */
@@ -251,6 +279,7 @@ closeOnBackdropClick(event: MouseEvent): void {
     this.isSaving = true;
     try {
       this.createdSurveyId = await this.supabase.saveSurvey(survey);
+      this.clearDraft();
       this.isSuccessOverlayOpen.set(true);
       this.redirectTimer = setTimeout(
         (): void => this.closeSuccessOverlay(),
@@ -264,34 +293,96 @@ closeOnBackdropClick(event: MouseEvent): void {
   }
 
   /** Returns today's date in the local YYYY-MM-DD format. */
-getTodayDate(): string {
-  const today: Date = new Date();
-  const year: number = today.getFullYear();
-  const month: string = String(today.getMonth() + 1).padStart(2, '0');
-  const day: string = String(today.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-}
+  getTodayDate(): string {
+    const today: Date = new Date();
+    const year: number = today.getFullYear();
+    const month: string = String(today.getMonth() + 1).padStart(2, '0');
+    const day: string = String(today.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
 
-/** Checks that the value represents an existing calendar date. */
-isValidDate(value: string): boolean {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
-    return false;
+  /** Checks that the value represents an existing calendar date. */
+  isValidDate(value: string): boolean {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+      return false;
+    }
+    const date: Date = new Date(value + 'T00:00:00');
+    const [year, month, day] = value.split('-').map(Number);
+    return date.getFullYear() === year &&
+      date.getMonth() === month - 1 &&
+      date.getDate() === day;
   }
-  const date: Date = new Date(value + 'T00:00:00');
-  const [year, month, day] = value.split('-').map(Number);
-  return date.getFullYear() === year &&
-    date.getMonth() === month - 1 &&
-    date.getDate() === day;
-}
 
-/** Allows an empty deadline or a valid date from today onward. */
-validateDeadline(value: string): ValidationErrors | null {
-  if (value === '') {
-    return null;
+  /** Allows an empty deadline or a valid date from today onward. */
+  validateDeadline(value: string): ValidationErrors | null {
+    if (value === '') {
+      return null;
+    }
+    if (!this.isValidDate(value)) {
+      return { invalidDate: true };
+    }
+    return value < this.getTodayDate() ? { pastDate: true } : null;
   }
-  if (!this.isValidDate(value)) {
-    return { invalidDate: true };
+
+  /** Stores the current form values, including incomplete inputs. */
+  saveDraft(): void {
+    try {
+      const draft: SurveyDraft = this.surveyForm.getRawValue();
+      localStorage.setItem(SURVEY_DRAFT_KEY, JSON.stringify(draft));
+    } catch (error: unknown) {
+      console.error('Survey draft could not be saved:', error);
+    }
   }
-  return value < this.getTodayDate() ? { pastDate: true } : null;
-}
+
+  /** Restores a previously saved draft if it can be read. */
+  restoreDraft(): void {
+    try {
+      const storedDraft: string | null = localStorage.getItem(SURVEY_DRAFT_KEY);
+      if (storedDraft === null) {
+        return;
+      }
+      const draft: SurveyDraft = JSON.parse(storedDraft);
+      this.applyDraft(draft);
+    } catch (error: unknown) {
+      console.error('Survey draft could not be restored:', error);
+    }
+  }
+
+  /** Rebuilds the question controls before restoring the form values. */
+  applyDraft(draft: SurveyDraft): void {
+    const restoredQuestions: QuestionForm[] = draft.questions.map(
+      (question: QuestionDraft): QuestionForm => this.restoreQuestion(question),
+    );
+    if (restoredQuestions.length < MIN_QUESTIONS) {
+      return;
+    }
+    this.surveyForm.setValue({ ...draft, questions: this.questions.getRawValue() });
+    this.questions.clear();
+    restoredQuestions.forEach((question: QuestionForm): void => {
+      this.questions.push(question);
+    });
+  }
+
+  /** Creates a question with the saved number of answer controls. */
+  restoreQuestion(draft: QuestionDraft): QuestionForm {
+    const question: QuestionForm = this.createQuestionForm();
+    if (draft.answers.length < MIN_ANSWERS || draft.answers.length > MAX_ANSWERS) {
+      throw new Error('Invalid answer count in survey draft.');
+    }
+    question.controls.answers.clear();
+    draft.answers.forEach((): void => {
+      question.controls.answers.push(this.createRequiredTextControl(MAX_ANSWER_LENGTH));
+    });
+    question.setValue(draft);
+    return question;
+  }
+
+  /** Removes the draft after the survey has been published successfully. */
+  clearDraft(): void {
+    try {
+      localStorage.removeItem(SURVEY_DRAFT_KEY);
+    } catch (error: unknown) {
+      console.error('Survey draft could not be removed:', error);
+    }
+  }
 }

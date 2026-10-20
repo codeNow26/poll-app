@@ -40,6 +40,7 @@ export class SurveyDetail implements OnInit, OnDestroy {
   showSaveError: WritableSignal<boolean> = signal(false);
   isSaving: WritableSignal<boolean> = signal(false);
   hasVoted: WritableSignal<boolean> = signal(false);
+  areResultsOpen: WritableSignal<boolean> = signal(true);
 
   selectedAnswers: number[][] = [];
   showAnswerError: boolean = false;
@@ -83,6 +84,7 @@ export class SurveyDetail implements OnInit, OnDestroy {
     this.isSaving.set(false);
     this.showSaveError.set(false);
     this.showAnswerError = false;
+    this.areResultsOpen.set(true);
   }
 
   /** Stops listening for votes from the previous survey. */
@@ -272,10 +274,29 @@ export class SurveyDetail implements OnInit, OnDestroy {
     console.error('Votes could not be saved:', error);
   }
 
+  /** Builds temporary votes from the current selection without saving them. */
+getPreviewVotes(): SurveyVote[] {
+  const currentSurvey: SavedSurvey | null = this.survey();
+  if (
+    currentSurvey === null || this.hasVoted() ||
+    this.isSaving() || this.isSurveyExpired()
+  ) {
+    return [];
+  }
+  return this.createVotes(currentSurvey).filter(
+    (vote: SurveyVote): boolean => vote.answer_indices.length > 0,
+  );
+}
+
+/** Combines saved votes and the unsaved selection for display only. */
+getResultVotes(): SurveyVote[] {
+  return [...this.savedVotes(), ...this.getPreviewVotes()];
+}
+
   /** Counts votes for one answer to a question. */
   getAnswerVoteCount(questionId: number, answerIndex: number): number {
     let count: number = 0;
-    for (const vote of this.savedVotes()) {
+   for (const vote of this.getResultVotes()) {
       if (
         vote.question_id === questionId &&
         vote.answer_indices.includes(answerIndex)
@@ -289,7 +310,7 @@ export class SurveyDetail implements OnInit, OnDestroy {
   /** Counts submitted votes for a question. */
   getQuestionVoteCount(questionId: number): number {
     let count: number = 0;
-    for (const vote of this.savedVotes()) {
+    for (const vote of this.getResultVotes()) {
       if (vote.question_id === questionId) {
         count++;
       }

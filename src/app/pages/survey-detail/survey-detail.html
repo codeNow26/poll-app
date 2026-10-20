@@ -5,7 +5,8 @@
     </a>
 
     <button class="detail-header__create" type="button" (click)="isCreateSurveyOpen.set(true)">
-        Create survey
+        <span>Create survey</span>
+        <img src="assets/icons/add_circle_black.svg" alt="">
     </button>
 </header>
 
@@ -15,6 +16,10 @@
         <span class="survey-detail__status">
             {{ isSurveyExpired() ? 'Expired' : 'Published' }}
         </span>
+        <a class="survey-detail__close" routerLink="/" aria-label="Back to home">
+            ×
+        </a>
+
 
         <div class="survey-detail__metadata">
             @if (loadedSurvey.deadline !== null) {
@@ -86,7 +91,9 @@
                 } @else if (hasVoted()) {
                 Thank you for voting!
                 } @else {
-                Complete survey
+                <span class="survey-detail__submit-desktop">Complete survey</span>
+                <span class="survey-detail__submit-mobile">Complete</span>
+                <img class="survey-detail__submit-icon" src="assets/icons/check_black.svg" alt="">
                 }
             </button>
         </div>
@@ -105,48 +112,58 @@
     </section>
 
     <section class="survey-results" aria-labelledby="results-title">
-        <h2 id="results-title" class="survey-results__title">
-            Survey results <span class="survey-results__live">LIVE</span>
-        </h2>
+        <button class="survey-results__toggle" type="button" [attr.aria-expanded]="areResultsOpen()"
+            aria-controls="survey-results-content" (click)="areResultsOpen.set(!areResultsOpen())">
+            {{ areResultsOpen() ? 'Close results' : 'Show results' }}
+            <span class="survey-results__arrow" [class.survey-results__arrow--open]="areResultsOpen()"
+                aria-hidden="true"></span>
+        </button>
 
-        @if (savedVotes().length === 0) {
-        <p class="survey-results__description">
-            Results will be shown here after participants complete the survey.
-        </p>
+        <div id="survey-results-content" class="survey-results__content"
+            [class.survey-results__content--closed]="!areResultsOpen()">
+            <h2 id="results-title" class="survey-results__title">
+                Survey results <span class="survey-results__live">LIVE</span>
+            </h2>
 
-        <div class="survey-results__empty">
-            <p>There are no answers yet.</p>
-        </div>
-        } @else {
-        <div class="survey-results__questions">
-            @for (question of loadedSurvey.questions; track question.id; let questionIndex = $index) {
-            <article class="survey-results__question">
-                <h3>
-                    {{ questionIndex + 1 }}. {{ question.questionText }}
-                </h3>
+            @if (getResultVotes().length === 0) {
+            <p class="survey-results__description">
+                Results will be shown here after participants complete the survey.
+            </p>
 
-                @if (getQuestionVoteCount(question.id) === 0) {
-                <p class="survey-results__no-votes">No votes yet.</p>
-                } @else {
-                @for (answer of question.answers; track $index; let answerIndex = $index) {
-                <div class="survey-results__answer">
-                    <span class="survey-results__letter">
-                        {{ 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'[answerIndex] }}
-                    </span>
+            <div class="survey-results__empty">
+                <p>There are no answers yet.</p>
+            </div>
+            } @else {
+            <div class="survey-results__questions">
+                @for (question of loadedSurvey.questions; track question.id; let questionIndex = $index) {
+                <article class="survey-results__question">
+                    <h3>
+                        {{ questionIndex + 1 }}. {{ question.questionText }}
+                    </h3>
 
-                    <meter class="survey-results__meter" [attr.aria-label]="'Vote percentage for ' + answer"
-                        [value]="getAnswerPercentage(question.id, answerIndex)" min="0" max="100"></meter>
+                    @if (getQuestionVoteCount(question.id) === 0) {
+                    <p class="survey-results__no-votes">No votes yet.</p>
+                    } @else {
+                    @for (answer of question.answers; track $index; let answerIndex = $index) {
+                    <div class="survey-results__answer">
+                        <span class="survey-results__letter">
+                            {{ 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'[answerIndex] }}
+                        </span>
 
-                    <span class="survey-results__percentage">
-                        {{ getAnswerPercentage(question.id, answerIndex) }}%
-                    </span>
-                </div>
+                        <meter class="survey-results__meter" [attr.aria-label]="'Vote percentage for ' + answer"
+                            [value]="getAnswerPercentage(question.id, answerIndex)" min="0" max="100"></meter>
+
+                        <span class="survey-results__percentage">
+                            {{ getAnswerPercentage(question.id, answerIndex) }}%
+                        </span>
+                    </div>
+                    }
+                    }
+                </article>
                 }
-                }
-            </article>
+            </div>
             }
         </div>
-        }
     </section>
     } @else {
     <p>Noch keine Umfrage angezeigt.</p>
@@ -154,7 +171,5 @@
 </main>
 
 @if (isCreateSurveyOpen()) {
-  <app-create-survey
-    (cancelled)="isCreateSurveyOpen.set(false)"
-  />
+<app-create-survey (cancelled)="isCreateSurveyOpen.set(false)" />
 }

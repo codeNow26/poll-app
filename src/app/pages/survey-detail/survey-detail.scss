@@ -21,9 +21,33 @@
     padding-block: 32px;
 
     &__create {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0;
         border: none;
         font-family: inherit;
         cursor: pointer;
+        transition: background-color 220ms ease, gap 220ms ease;
+
+        img {
+            display: block;
+            flex-shrink: 0;
+            width: 0;
+            height: 20px;
+            opacity: 0;
+            transition: width 220ms ease, opacity 220ms ease;
+        }
+
+        &:hover,
+        &:focus-visible {
+            gap: 8px;
+
+            img {
+                width: 20px;
+                opacity: 1;
+            }
+        }
     }
 
     &__brand {
@@ -130,7 +154,7 @@
 
     &__questions {
         display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+       grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
         align-items: start;
         gap: 40px 24px;
         margin-top: 40px;
@@ -355,6 +379,16 @@
             background: #ffb770;
         }
     }
+
+    &__toggle {
+        display: none;
+    }
+}
+
+.survey-detail__close,
+.survey-detail__submit-mobile,
+.survey-detail__submit-icon {
+    display: none;
 }
 
 @media (max-width: 1000px) {
@@ -394,6 +428,13 @@
         &__create {
             padding: 10px 12px;
             font-size: 16px;
+            gap: 8px;
+            display: none;
+
+            img {
+                width: 20px;
+                opacity: 1;
+            }
         }
     }
 
@@ -403,9 +444,58 @@
         padding-bottom: 48px;
 
         &__form {
+            position: relative;
             padding: 32px 20px;
             border-top-right-radius: 80px;
         }
+
+        &__close {
+            position: absolute;
+            top: 32px;
+            right: 20px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background-color: #ffd0a1;
+            color: #35273a;
+            font-size: 26px;
+            line-height: 1;
+            text-decoration: none;
+
+            &:hover {
+                background-color: #ffb770;
+            }
+
+            &:focus-visible {
+                outline: 2px solid #35273a;
+                outline-offset: 3px;
+            }
+        }
+
+        &__submit {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        &__submit-desktop {
+            display: none;
+        }
+
+        &__submit-mobile {
+            display: inline;
+        }
+
+        &__submit-icon {
+            display: block;
+            width: 20px;
+            height: 20px;
+        }
+
 
         &__title {
             font-size: 36px;
@@ -417,6 +507,42 @@
 
         &__empty {
             min-height: 160px;
+        }
+
+        &__toggle {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 20px;
+            padding: 8px 0;
+            border: none;
+            background: transparent;
+            color: #35273a;
+            font: inherit;
+            font-size: 16px;
+            cursor: pointer;
+
+            &:focus-visible {
+                outline: 2px solid #35273a;
+                outline-offset: 4px;
+            }
+        }
+
+        &__arrow {
+            width: 0;
+            height: 0;
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+            border-top: 6px solid currentColor;
+            transition: transform 220ms ease;
+
+            &--open {
+                transform: rotate(180deg);
+            }
+        }
+
+        &__content--closed {
+            display: none;
         }
     }
 }
@@ -448,5 +574,16 @@
             margin-left: 0 !important;
             text-align: left;
         }
+    }
+
+    .survey-detail__close {
+        top: 24px;
+        right: 12px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .survey-results__arrow {
+        transition: none;
     }
 }
