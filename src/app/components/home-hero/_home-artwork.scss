@@ -1,0 +1,108 @@
+.hero-right {
+  position: relative;
+  flex: 0 1 420px;
+  min-width: 0;
+
+  &__img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  &__decoration {
+    position: absolute;
+    z-index: 1;
+    display: block;
+    height: auto;
+    pointer-events: none;
+    user-select: none;
+    will-change: transform;
+    scale: 1;
+    translate: 0 0;
+    animation: hero-float 4.5s ease-in-out infinite;
+    transition: scale 300ms ease, translate 300ms ease;
+
+    &--bubble {
+      top: 0;
+      left: 0;
+      width: 36%;
+      animation-delay: -1.2s;
+    }
+
+    &--question {
+      top: 16%;
+      right: 1%;
+      width: 21%;
+      animation-duration: 5s;
+      animation-delay: -2.4s;
+    }
+
+    &--check {
+      top: 60%;
+      left: 1%;
+      width: 19%;
+      animation-duration: 4s;
+      animation-delay: -0.6s;
+    }
+
+    &--star {
+      right: 0;
+      bottom: 10%;
+      width: 17%;
+      animation-duration: 4.8s;
+      animation-delay: -3s;
+    }
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .hero-right:hover {
+    .hero-right__decoration {
+      scale: 1.15;
+
+      &--bubble {
+        translate: -8px -8px;
+      }
+
+      &--question {
+        translate: 8px -8px;
+      }
+
+      &--check {
+        translate: -8px 8px;
+      }
+
+      &--star {
+        translate: 8px 8px;
+      }
+    }
+  }
+}
+
+@keyframes hero-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@media (max-width: 1000px) {
+  .hero-right {
+    order: 1;
+    flex: none;
+    width: 100%;
+    max-width: 320px;
+    align-self: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-right__decoration {
+    animation: none;
+    transition: none;
+  }
+}

@@ -1,0 +1,1 @@
+export type SurveyCardVariant = 'featured' | 'compact';

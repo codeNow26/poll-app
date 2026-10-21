@@ -1,217 +1,94 @@
 <header class="header">
-    <a class="header__brand" routerLink="/" aria-label="Poll App home">
-        <img class="header__logo" src="assets/icons/hero-logo.svg" alt="">
-        <span class="header__name">Poll<br>App</span>
-    </a>
+  <a class="header__brand" routerLink="/" aria-label="Poll App home">
+    <img class="header__logo" src="assets/icons/hero-logo.svg" alt="">
+    <span class="header__name">Poll<br>App</span>
+  </a>
 </header>
 
 <main class="home">
-    <section class="hero">
-        <div class="hero-content">
-            <div class="hero-left">
-                <h1 class="hero-left__title text-primary">
-                    Collect Feedback, Unlock Ideas
-                </h1>
+  <app-home-hero (createRequested)="isCreateSurveyOpen.set(true)" />
 
-                <p class="hero-left__description">
-                    Create and share surveys in minutes - from team events to
-                    workplace culture. Collect opinions, engage your audience,
-                    and turn feedback into action.
-                </p>
+  <section class="survey-section">
+    <h2 class="survey-section__title text-primary">Your surveys</h2>
 
-                <button
-                    type="button"
-                    class="hero-left__button"
-                    (click)="isCreateSurveyOpen.set(true)"
-                >
-                    <img src="assets/icons/add_circle_black.svg" alt="">
-                    <span>New Survey</span>
-                </button>
-            </div>
-
-            <div class="hero-right" aria-hidden="true">
-                <img
-                    src="assets/images/hero-img.png"
-                    alt=""
-                    class="hero-right__img"
-                >
-
-                <img
-                    src="assets/icons/typing bubble.svg"
-                    alt=""
-                    class="hero-right__decoration hero-right__decoration--bubble"
-                >
-
-                <img
-                    src="assets/icons/Questionmark.svg"
-                    alt=""
-                    class="hero-right__decoration hero-right__decoration--question"
-                >
-
-                <img
-                    src="assets/icons/checkmark.svg"
-                    alt=""
-                    class="hero-right__decoration hero-right__decoration--check"
-                >
-
-                <img
-                    src="assets/icons/star.svg"
-                    alt=""
-                    class="hero-right__decoration hero-right__decoration--star"
-                >
-            </div>
+    @if (isLoading()) {
+      <p role="status">Loading surveys...</p>
+    } @else if (showLoadError()) {
+      <p role="alert">
+        Surveys could not be loaded. Please reload the page.
+      </p>
+    } @else {
+      <div class="surveys">
+        <h3 class="surveys__title">Ending soon surveys</h3>
+        <div class="surveys__cards">
+          @for (item of endingSoonSurveys(); track item.id) {
+            <app-survey-card [survey]="item" variant="featured" />
+          }
         </div>
-    </section>
+      </div>
 
-    <section class="survey-section">
-        <h2 class="survey-section__title text-primary">Your surveys</h2>
+      <div class="surveys-overview">
+        <div class="surveys-overview__controls">
+          <div class="surveys-overview__tabs">
+            <button type="button" class="surveys-overview__tab"
+              [class.surveys-overview__tab--selected]="selectedTab === 'active'"
+              (click)="switchSurveys('active')">
+              Active Surveys
+            </button>
+            <button type="button" class="surveys-overview__tab"
+              [class.surveys-overview__tab--selected]="selectedTab === 'past'"
+              (click)="switchSurveys('past')">
+              Past Surveys
+            </button>
+          </div>
 
-        @if (isLoading()) {
-            <p role="status">Loading surveys...</p>
-        } @else if (showLoadError()) {
-            <p role="alert">
-                Surveys could not be loaded. Please reload the page.
-            </p>
-        } @else {
-            <div class="surveys">
-                <h3 class="surveys__title">Ending soon surveys</h3>
+          <div class="surveys-overview__category">
+            <button #categoryTrigger type="button"
+              class="surveys-overview__category-button"
+              [class.surveys-overview__category-button--selected]="selectedCategory !== 'All Surveys'"
+              [attr.aria-expanded]="isCategoryDropdownOpen"
+              aria-controls="home-category-menu"
+              (click)="toggleCategoryDropdown()">
+              Sort by categories
+              <img class="surveys-overview__category-arrow"
+                [class.surveys-overview__category-arrow--open]="isCategoryDropdownOpen"
+                src="icons/arrow_drop_down.svg" alt="">
+            </button>
 
-                <div class="surveys__cards">
-                    @for (item of endingSoonSurveys(); track item.id) {
-                        <app-survey-card [survey]="item" variant="featured" />
-                    }
-                </div>
-            </div>
-
-            <div class="surveys-overview">
-                <div class="surveys-overview__controls">
-                    <div class="surveys-overview__tabs">
-                        <button
-                            type="button"
-                            class="surveys-overview__tab"
-                            [class.surveys-overview__tab--selected]="selectedTab === 'active'"
-                            (click)="switchSurveys('active')"
-                        >
-                            Active Surveys
-                        </button>
-
-                        <button
-                            type="button"
-                            class="surveys-overview__tab"
-                            [class.surveys-overview__tab--selected]="selectedTab === 'past'"
-                            (click)="switchSurveys('past')"
-                        >
-                            Past Surveys
-                        </button>
-                    </div>
-
-                    <div class="surveys-overview__category">
-                        <button
-                         #categoryTrigger
-                            type="button"
-                            class="surveys-overview__category-button"
-                            [class.surveys-overview__category-button--selected]="selectedCategory !== 'All Surveys'"
-                            [attr.aria-expanded]="isCategoryDropdownOpen"
-                            aria-controls="home-category-menu"
-                            [style.max-height.px]="categoryMenuHeight()"
-                            (click)="toggleCategoryDropdown()"
-                        >
-                            Sort by categories
-                            <img
-                                class="surveys-overview__category-arrow"
-                                [class.surveys-overview__category-arrow--open]="isCategoryDropdownOpen"
-                                src="icons/arrow_drop_down.svg"
-                                alt=""
-                            >
-                        </button>
-
-                        @if (isCategoryDropdownOpen) {
-                            <div
-                                id="home-category-menu"
-                                class="surveys-overview__category-menu"
-                            >
-                                <button
-                                    type="button"
-                                    class="surveys-overview__category-option"
-                                    (click)="switchCategory('All Surveys')"
-                                >
-                                    All Surveys
-                                </button>
-
-                                <button
-                                    type="button"
-                                    class="surveys-overview__category-option"
-                                    (click)="switchCategory('Team Activities')"
-                                >
-                                    Team Activities
-                                </button>
-
-                                <button
-                                    type="button"
-                                    class="surveys-overview__category-option"
-                                    (click)="switchCategory('Health & Wellness')"
-                                >
-                                    Health & Wellness
-                                </button>
-
-                                <button
-                                    type="button"
-                                    class="surveys-overview__category-option"
-                                    (click)="switchCategory('Gaming & Entertainment')"
-                                >
-                                    Gaming & Entertainment
-                                </button>
-
-                                <button
-                                    type="button"
-                                    class="surveys-overview__category-option"
-                                    (click)="switchCategory('Education & Learning')"
-                                >
-                                    Education & Learning
-                                </button>
-
-                                <button
-                                    type="button"
-                                    class="surveys-overview__category-option"
-                                    (click)="switchCategory('Lifestyle & Preferences')"
-                                >
-                                    Lifestyle & Preferences
-                                </button>
-
-                                <button
-                                    type="button"
-                                    class="surveys-overview__category-option"
-                                    (click)="switchCategory('Technology & Innovation')"
-                                >
-                                    Technology & Innovation
-                                </button>
-                            </div>
-                        }
-                    </div>
-                </div>
-
-                @if (selectedCategory !== 'All Surveys') {
-                    <p class="surveys-overview__selected-category">
-                        {{ selectedCategory }}
-                    </p>
+            @if (isCategoryDropdownOpen) {
+              <div id="home-category-menu"
+                class="surveys-overview__category-menu"
+                [style.max-height.px]="categoryMenuHeight()">
+                @for (category of categories; track category) {
+                  <button type="button"
+                    class="surveys-overview__category-option"
+                    (click)="switchCategory(category)">
+                    {{ category }}
+                  </button>
                 }
+              </div>
+            }
+          </div>
+        </div>
 
-                <div class="surveys-overview__list">
-                    @for (item of getVisibleSurveys(); track item.id) {
-                        <app-survey-card [survey]="item" />
-                    } @empty {
-                        <p class="surveys-overview__empty-message">
-                            no surveys available
-                        </p>
-                    }
-                </div>
-            </div>
+        @if (selectedCategory !== 'All Surveys') {
+          <p class="surveys-overview__selected-category">
+            {{ selectedCategory }}
+          </p>
         }
-    </section>
+
+        <div class="surveys-overview__list">
+          @for (item of getVisibleSurveys(); track item.id) {
+            <app-survey-card [survey]="item" />
+          } @empty {
+            <p class="surveys-overview__empty-message">No surveys available</p>
+          }
+        </div>
+      </div>
+    }
+  </section>
 </main>
 
 @if (isCreateSurveyOpen()) {
-    <app-create-survey
-        (cancelled)="isCreateSurveyOpen.set(false)"
-    />
+  <app-create-survey (cancelled)="isCreateSurveyOpen.set(false)" />
 }

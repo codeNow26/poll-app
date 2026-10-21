@@ -1,0 +1,142 @@
+.surveys-overview {
+  position: relative;
+
+  &__controls {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 12px;
+    min-height: 32px;
+  }
+
+  &__tabs {
+    display: flex;
+    align-self: flex-start;
+    gap: 16px;
+  }
+
+  &__tab {
+    padding: 4px 12px;
+    border: none;
+    border-radius: 20px;
+    background-color: #f2edf5;
+    color: #35273a;
+    font-size: 16px;
+    white-space: nowrap;
+    cursor: pointer;
+
+    &--selected {
+      background-color: #ffb770;
+    }
+  }
+
+  &__category {
+    position: relative;
+    max-width: 100%;
+  }
+
+  &__category-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 0;
+    border: none;
+    background: transparent;
+    color: #fff;
+    font-size: 16px;
+    white-space: nowrap;
+    cursor: pointer;
+
+    &--selected {
+      color: #ffb770;
+    }
+  }
+
+  &__category-arrow {
+    width: 20px;
+    height: 20px;
+    transition: transform 180ms ease;
+
+    &--open {
+      transform: rotate(180deg);
+    }
+  }
+
+  &__selected-category {
+    margin: 12px 0 0;
+    color: #ffb770;
+    font-size: 16px;
+    text-align: right;
+  }
+
+  &__category-menu {
+    position: absolute;
+    top: calc(100% + 4px);
+    right: 0;
+    z-index: 10;
+    box-sizing: border-box;
+    width: 280px;
+    max-width: calc(100vw - 24px);
+    max-height: min(260px, 40dvh);
+    padding-block: 6px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    border: none;
+    border-radius: 6px;
+    background-color: #fffcff;
+    box-shadow: 0 8px 20px rgb(0 0 0 / 15%);
+    scrollbar-width: thin;
+    scrollbar-color: #ffb770 #fffcff;
+
+    button {
+      display: block;
+      width: 100%;
+      padding: 4px 10px;
+      border: none;
+      background: transparent;
+      color: #35273a;
+      font: inherit;
+      font-size: 16px;
+      line-height: 1.4;
+      text-align: left;
+      cursor: pointer;
+      transition: background-color 150ms ease;
+
+      &:hover {
+        background-color: #ffe8d0;
+      }
+
+      &:focus-visible {
+        outline: 2px solid #35273a;
+        outline-offset: -2px;
+        background-color: #ffe8d0;
+      }
+    }
+  }
+
+  &__tab:focus-visible,
+  &__category-button:focus-visible {
+    outline: 2px solid #ffb770;
+    outline-offset: 4px;
+  }
+}
+
+@media (max-width: 480px) {
+  .surveys-overview {
+    &__tabs {
+      gap: 8px;
+    }
+
+    &__tab {
+      padding-inline: 8px;
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .surveys-overview__category-arrow,
+  .surveys-overview__category-menu button {
+    transition: none;
+  }
+}

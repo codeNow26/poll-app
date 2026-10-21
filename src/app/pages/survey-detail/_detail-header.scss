@@ -1,0 +1,99 @@
+.detail-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding-block: 32px;
+
+  &__brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: #35273a;
+    text-decoration: none;
+
+    img {
+      display: block;
+      width: 64px;
+      height: auto;
+    }
+
+    span {
+      font-family: 'Nerko One', cursive;
+      font-size: 26px;
+      line-height: 0.9;
+    }
+  }
+
+  &__create {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    padding: 12px 18px;
+    border: none;
+    border-radius: 8px;
+    background-color: #ffd0a1;
+    color: #35273a;
+    font-family: inherit;
+    font-size: 16px;
+    font-weight: 700;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color 220ms ease, gap 220ms ease;
+
+    img {
+      display: block;
+      flex-shrink: 0;
+      width: 0;
+      height: 20px;
+      opacity: 0;
+      transition: width 220ms ease, opacity 220ms ease;
+    }
+
+    &:hover {
+      background-color: #ffb770;
+    }
+
+    &:hover,
+    &:focus-visible {
+      gap: 8px;
+
+      img {
+        width: 20px;
+        opacity: 1;
+      }
+    }
+  }
+
+  a:focus-visible,
+  button:focus-visible {
+    outline: 3px solid #35273a;
+    outline-offset: 4px;
+  }
+}
+
+@media (max-width: 900px) {
+  .detail-header {
+    padding-block: 24px;
+
+    &__brand img {
+      width: 48px;
+    }
+
+    &__brand span {
+      font-size: 22px;
+    }
+
+    &__create {
+      display: none;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .detail-header {
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+}

@@ -1,0 +1,18 @@
+<div class="create-survey__success-backdrop">
+  <div
+    class="create-survey__success-overlay"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="success-title"
+  >
+    <h2 id="success-title">Your survey is now published</h2>
+
+    <button
+      type="button"
+      aria-label="View published survey"
+      (click)="closed.emit()"
+    >
+      ×
+    </button>
+  </div>
+</div>

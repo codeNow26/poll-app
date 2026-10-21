@@ -1,0 +1,165 @@
+:host {
+  display: block;
+  min-width: 0;
+  max-width: 300px;
+  padding-top: 96px;
+}
+
+.survey-results {
+  &__title {
+    margin: 0 0 20px;
+    font-family: 'Nerko One', cursive;
+    font-size: 30px;
+    font-weight: 400;
+    line-height: 1.2;
+  }
+
+  &__description {
+    max-width: 320px;
+    margin: 0;
+    font-size: 16px;
+    line-height: 1.5;
+  }
+
+  &__empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 240px;
+    text-align: center;
+    font-size: 16px;
+  }
+
+  &__questions {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  &__question h3 {
+    margin: 0 0 14px;
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+  }
+
+  &__live {
+    color: #ffb770;
+    font-size: 30px;
+  }
+
+  &__no-votes {
+    margin: 0;
+    font-size: 16px;
+  }
+
+  &__answer {
+    display: grid;
+    grid-template-columns: 12px minmax(0, 1fr) 42px;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  &__letter {
+    font-size: 16px;
+  }
+
+  &__percentage {
+    color: #a95c16;
+    font-size: 16px;
+    font-weight: 600;
+  }
+
+  &__meter {
+    display: block;
+    width: 100%;
+    height: 16px;
+    overflow: hidden;
+    border: none;
+    border-radius: 0 6px 6px 0;
+    background: #ededed;
+    appearance: none;
+
+    &::-webkit-meter-bar {
+      height: 16px;
+      border: none;
+      border-radius: 0 6px 6px 0;
+      background: #ededed;
+      box-shadow: none;
+    }
+
+    &::-webkit-meter-optimum-value {
+      border-radius: 0 6px 6px 0;
+      background: #ffb770;
+    }
+
+    &::-moz-meter-bar {
+      border-radius: 0 6px 6px 0;
+      background: #ffb770;
+    }
+  }
+
+  &__toggle {
+    display: none;
+  }
+}
+
+@media (max-width: 900px) {
+  :host {
+    padding-top: 0;
+  }
+
+  .survey-results {
+    &__empty {
+      min-height: 160px;
+    }
+
+    &__toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 20px;
+      padding: 8px 0;
+      border: none;
+      background: transparent;
+      color: #35273a;
+      font: inherit;
+      font-size: 16px;
+      cursor: pointer;
+
+      &:focus-visible {
+        outline: 2px solid #35273a;
+        outline-offset: 4px;
+      }
+    }
+
+    &__arrow {
+      width: 0;
+      height: 0;
+      border-left: 5px solid transparent;
+      border-right: 5px solid transparent;
+      border-top: 6px solid currentColor;
+      transition: transform 220ms ease;
+
+      &--open {
+        transform: rotate(180deg);
+      }
+    }
+
+    &__content--closed {
+      display: none;
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .survey-results__arrow {
+    transition: none;
+  }
+}

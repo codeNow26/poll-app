@@ -1,59 +1,107 @@
-# PollApp
+# Poll App
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.2.19.
+This is my Poll App, which I built during my frontend development course
+at Developer Akademie.
 
-## Development server
+You can create a survey, share its link and let other people vote.
+The app works on desktop and mobile.
 
-To start a local development server, run:
+**[Try the app here](https://philipp-nowotnick.developerakademie.net/poll-app/)**
 
-```bash
-ng serve
-```
+## What you can do
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+- Create surveys with several questions.
+- Add up to six answers per question.
+- Allow one answer or multiple answers.
+- Choose a category and an optional end date.
+- Filter surveys by category and switch between active and past surveys.
+- See a preview of the results while selecting your answers.
 
-## Code scaffolding
+The preview does not send anything to the database.
+Your answers are only saved when you click “Complete survey”.
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+Unfinished surveys are saved in your browser, so you can close the dialog
+and continue later. The app also remembers if you have already voted.
+This is saved in the browser, so it does not prevent voting again
+from another browser.
 
-```bash
-ng generate component component-name
-```
+## Built with
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+- Angular 21
+- TypeScript
+- HTML and SCSS
+- Supabase for storing surveys and updating results
 
-```bash
-ng generate --help
-```
+## Run the project locally
 
-## Building
+You need Git, npm and a Node.js version that works with Angular 21.
 
-To build the project run:
-
-```bash
-ng build
-```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
+Clone the repository and open the project folder:
 
 ```bash
-ng test
+git clone https://github.com/codeNow26/poll-app.git
+cd poll-app
 ```
 
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
+Install the dependencies:
 
 ```bash
-ng e2e
+npm ci
 ```
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+Start the app:
 
-## Additional Resources
+```bash
+npm start
+```
 
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+Then open `http://localhost:4200/` in your browser.
+If that port is already in use, check the terminal for the correct address.
+
+## Database
+
+The Supabase connection is already configured in
+`src/app/services/supabase.ts`. You do not need to create an `.env` file
+to use the current setup.
+
+You need an internet connection to load surveys and save votes.
+
+**The local version uses the same database as the live app.**
+If you create a survey or submit a vote locally, it will also appear there.
+
+If you want to use your own Supabase project, you need to change the
+connection details and set up the tables, permissions and Realtime updates.
+The app uses three tables: `surveys`, `questions` and `survey_votes`.
+
+## Build
+
+To build the project:
+
+```bash
+npm run build
+```
+
+For my hosting setup, the app is inside a folder called `poll-app`,
+so I use:
+
+```bash
+npm run build -- --base-href /poll-app/
+```
+
+I then upload the contents of `dist/poll-app/browser/` to that folder
+on the server.
+
+## About this project
+
+This project helped me practise Angular components, reactive forms,
+form validation and working with a database.
+
+I also worked on the responsive layout and improved the app based
+on feedback from my mentors. This included splitting larger components
+into smaller parts to make the code easier to read.
+
+## Author
+
+Philipp Nowotnick
+
+[My GitHub](https://github.com/codeNow26)

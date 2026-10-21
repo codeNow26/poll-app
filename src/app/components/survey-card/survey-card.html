@@ -1,19 +1,19 @@
 <a
-    class="survey-card"
-    [class.survey-card--featured]="variant() === 'featured'"
-    [routerLink]="['/survey', survey().id]"
+  class="survey-card"
+  [class.survey-card--featured]="variant() === 'featured'"
+  [routerLink]="['/survey', survey().id]"
 >
-    <p class="survey-card__category">
-        {{ survey().category }}
+  <p class="survey-card__category">
+    {{ survey().category }}
+  </p>
+
+  <h3 class="survey-card__title">
+    {{ survey().title }}
+  </h3>
+
+  @if (survey().deadline !== null) {
+    <p class="survey-card__deadline">
+      {{ getDeadlineLabel() }}
     </p>
-
-    <h3 class="survey-card__title">
-        {{ survey().title }}
-    </h3>
-
-    @if (survey().deadline !== null) {
-        <p class="survey-card__deadline">
-            {{ getDeadlineLabel() }}
-        </p>
-    }
+  }
 </a>

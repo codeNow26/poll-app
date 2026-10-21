@@ -1,0 +1,91 @@
+.create-survey {
+  &__delete {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    padding: 2px;
+    border: none;
+    border-radius: 3px;
+    background: transparent;
+    color: #fff;
+    font-size: 24px;
+    cursor: pointer;
+    transition: background-color 180ms ease;
+
+    img {
+      display: block;
+      width: 20px;
+      height: 20px;
+      transition: filter 180ms ease;
+    }
+
+    &:hover:not(:disabled),
+    &:focus-visible:not(:disabled) {
+      background-color: #ffd0a1;
+
+      img {
+        filter: brightness(0) saturate(100%);
+      }
+    }
+  }
+
+  &__error {
+    margin: 4px 0 0;
+    color: #ffb3b3;
+    font-size: 16px;
+    line-height: 1.4;
+
+    &--hidden {
+      visibility: hidden;
+    }
+  }
+
+  &__input,
+  &__textarea {
+    width: 100%;
+    min-width: 0;
+    padding: 8px 12px;
+    border: 1px solid transparent;
+    border-radius: 0 16px 0 0;
+    background-color: #fffcff;
+    color: #35273a;
+    font: inherit;
+    font-size: 16px;
+    line-height: 1.4;
+
+    &::placeholder {
+      color: #756d78;
+    }
+
+    &:focus-visible {
+      outline: 2px solid #ffb770;
+      outline-offset: 2px;
+    }
+
+    &.ng-invalid.ng-touched {
+      border-color: #ff9999;
+    }
+  }
+
+  &__input {
+    min-height: 38px;
+  }
+
+  &__textarea {
+    min-height: 108px;
+    resize: vertical;
+  }
+}
+
+button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+button:focus-visible {
+  outline: 2px solid #ffb770;
+  outline-offset: 3px;
+}

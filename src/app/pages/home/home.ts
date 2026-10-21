@@ -1,166 +1,118 @@
-import { Component, ElementRef, inject, OnInit, signal, viewChild, WritableSignal} from '@angular/core';
+import { Component, ElementRef, inject, OnInit, signal, viewChild, WritableSignal } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { HomeHero } from '../../components/home-hero/home-hero';
 import { SurveyCard } from '../../components/survey-card/survey-card';
 import { SavedSurvey } from '../../models/survey.model/survey.model';
-import { Supabase } from '../../services/supabase';
+import { SurveyOverviewService } from '../../services/survey-overview';
+import { CategoryFilter, SurveyTab } from '../../types/survey-filter.types';
 import { CreateSurvey } from '../create-survey/create-survey';
 
-type SurveyTab = 'active' | 'past';
-type CategoryFilter =
-  | 'All Surveys'
-  | 'Team Activities'
-  | 'Health & Wellness'
-  | 'Gaming & Entertainment'
-  | 'Education & Learning'
-  | 'Lifestyle & Preferences'
-  | 'Technology & Innovation';
-
-const ENDING_SOON_LIMIT: number = 3;
+const CATEGORY_MENU_MAX_HEIGHT: number = 260;
+const CATEGORY_MENU_GAP: number = 4;
+const VIEWPORT_BOTTOM_SPACING: number = 12;
 
 @Component({
   selector: 'app-home',
- imports: [SurveyCard, RouterLink, CreateSurvey],
+  imports: [SurveyCard, RouterLink, CreateSurvey, HomeHero],
+  providers: [SurveyOverviewService],
   templateUrl: './home.html',
   styleUrl: './home.scss',
   host: {
-  '(window:resize)': 'updateCategoryMenuHeight()',
-  '(window:scroll)': 'updateCategoryMenuHeight()',
-},
+    '(window:resize)': 'updateCategoryMenuHeight()',
+    '(window:scroll)': 'updateCategoryMenuHeight()',
+  },
 })
-
 export class Home implements OnInit {
-  supabase: Supabase = inject(Supabase);
-  surveys: WritableSignal<SavedSurvey[]> =
-    signal<SavedSurvey[]>([]);
-  endingSoonSurveys: WritableSignal<SavedSurvey[]> =
-    signal<SavedSurvey[]>([]);
-  activeSurveys: WritableSignal<SavedSurvey[]> =
-    signal<SavedSurvey[]>([]);
-  pastSurveys: WritableSignal<SavedSurvey[]> =
-    signal<SavedSurvey[]>([]);
+  overview: SurveyOverviewService = inject(SurveyOverviewService);
 
-  isLoading: WritableSignal<boolean> = signal(true);
-  showLoadError: WritableSignal<boolean> = signal(false);
+  endingSoonSurveys = this.overview.endingSoonSurveys;
+  activeSurveys = this.overview.activeSurveys;
+  pastSurveys = this.overview.pastSurveys;
+  isLoading = this.overview.isLoading;
+  showLoadError = this.overview.showLoadError;
+
+  categoryTrigger =
+    viewChild<ElementRef<HTMLButtonElement>>('categoryTrigger');
+  categoryMenuHeight: WritableSignal<number> =
+    signal(CATEGORY_MENU_MAX_HEIGHT);
+  isCreateSurveyOpen: WritableSignal<boolean> = signal(false);
 
   selectedTab: SurveyTab = 'active';
   selectedCategory: CategoryFilter = 'All Surveys';
   isCategoryDropdownOpen: boolean = false;
-  categoryTrigger = viewChild<ElementRef<HTMLButtonElement>>('categoryTrigger');
-categoryMenuHeight: WritableSignal<number> = signal(260);
-  isCreateSurveyOpen: WritableSignal<boolean> = signal(false);
 
-  /** Loads and groups the surveys when the home page opens. */
+  categories: CategoryFilter[] = [
+    'All Surveys',
+    'Team Activities',
+    'Health & Wellness',
+    'Gaming & Entertainment',
+    'Education & Learning',
+    'Lifestyle & Preferences',
+    'Technology & Innovation',
+  ];
+
+  /**
+   * Loads the surveys when the home page opens.
+   * @returns Resolves after the initial survey load finishes.
+   */
   async ngOnInit(): Promise<void> {
-    try {
-      const LOADED_SURVEYS: SavedSurvey[] =
-        await this.supabase.loadSurveys();
-      this.surveys.set(LOADED_SURVEYS);
-      this.groupSurveys(LOADED_SURVEYS);
-    } catch (error: unknown) {
-      this.showLoadError.set(true);
-      console.error('Surveys could not be loaded:', error);
-    } finally {
-      this.isLoading.set(false);
-    }
+    await this.overview.load();
   }
 
-  /** Switches between active and past surveys. */
+  /**
+   * Switches between active and expired surveys.
+   * @param tab - Survey group to display.
+   */
   switchSurveys(tab: SurveyTab): void {
     this.selectedTab = tab;
   }
 
-  /** Selects a category filter and closes the dropdown. */
+  /**
+   * Applies a category filter and closes the dropdown.
+   * @param category - Category to display, or All Surveys.
+   */
   switchCategory(category: CategoryFilter): void {
     this.selectedCategory = category;
     this.isCategoryDropdownOpen = false;
   }
 
- /** Toggles the dropdown and measures the available space below it. */
-toggleCategoryDropdown(): void {
-  this.isCategoryDropdownOpen = !this.isCategoryDropdownOpen;
-  this.updateCategoryMenuHeight();
-}
-
-/** Keeps the dropdown within the viewport while scrolling or resizing. */
-updateCategoryMenuHeight(): void {
-  const trigger: HTMLButtonElement | undefined =
-    this.categoryTrigger()?.nativeElement;
-  if (!this.isCategoryDropdownOpen || !trigger) {
-    return;
+  /** Toggles the dropdown and measures the available space below it. */
+  toggleCategoryDropdown(): void {
+    this.isCategoryDropdownOpen = !this.isCategoryDropdownOpen;
+    this.updateCategoryMenuHeight();
   }
-  const menuGap: number = 4;
-  const bottomSpacing: number = 12;
-  const availableHeight: number =
-    window.innerHeight - trigger.getBoundingClientRect().bottom
-    - menuGap - bottomSpacing;
-  this.categoryMenuHeight.set(Math.max(0, Math.min(260, availableHeight)));
-}
 
-  /** Returns surveys matching the selected tab and category. */
+  /** Limits the open menu to the available viewport height. */
+  updateCategoryMenuHeight(): void {
+    const trigger: HTMLButtonElement | undefined =
+      this.categoryTrigger()?.nativeElement;
+    if (!this.isCategoryDropdownOpen || !trigger) {
+      return;
+    }
+    const availableHeight: number =
+      window.innerHeight -
+      trigger.getBoundingClientRect().bottom -
+      CATEGORY_MENU_GAP -
+      VIEWPORT_BOTTOM_SPACING;
+    this.categoryMenuHeight.set(
+      Math.max(0, Math.min(CATEGORY_MENU_MAX_HEIGHT, availableHeight)),
+    );
+  }
+
+  /**
+   * Filters the currently selected survey group.
+   * @returns Surveys matching the selected tab and category.
+   */
   getVisibleSurveys(): SavedSurvey[] {
-    const SURVEYS_TO_FILTER: SavedSurvey[] =
+    const surveys: SavedSurvey[] =
       this.selectedTab === 'active'
         ? this.activeSurveys()
         : this.pastSurveys();
-    return SURVEYS_TO_FILTER.filter(
+
+    return surveys.filter(
       (survey: SavedSurvey): boolean =>
         this.selectedCategory === 'All Surveys' ||
         survey.category === this.selectedCategory,
-    );
-  }
-
-  /** Separates active and expired surveys using today's local date. */
-  groupSurveys(surveys: SavedSurvey[]): void {
-    const TODAY: Date = this.getToday();
-    const ACTIVE_SURVEYS: SavedSurvey[] = surveys.filter(
-      (survey: SavedSurvey): boolean => !this.isExpired(survey, TODAY),
-    );
-    const PAST_SURVEYS: SavedSurvey[] = surveys.filter(
-      (survey: SavedSurvey): boolean => this.isExpired(survey, TODAY),
-    );
-    ACTIVE_SURVEYS.sort(this.compareDeadlines);
-    this.activeSurveys.set(ACTIVE_SURVEYS);
-    this.pastSurveys.set(PAST_SURVEYS);
-    this.updateEndingSoonSurveys(ACTIVE_SURVEYS);
-  }
-
-  /** Returns today's date at local midnight. */
-  getToday(): Date {
-    const TODAY: Date = new Date();
-    TODAY.setHours(0, 0, 0, 0);
-    return TODAY;
-  }
-
-  /** Checks whether a survey's deadline is before today. */
-  isExpired(survey: SavedSurvey, today: Date): boolean {
-    if (survey.deadline === null) {
-      return false;
-    }
-    const DEADLINE: Date = new Date(survey.deadline + 'T00:00:00');
-    return DEADLINE < today;
-  }
-
-  /** Sorts by earliest deadline, placing surveys without deadlines last. */
-  compareDeadlines(first: SavedSurvey, second: SavedSurvey): number {
-    if (first.deadline === null && second.deadline === null) {
-      return 0;
-    }
-    if (first.deadline === null) {
-      return 1;
-    }
-    if (second.deadline === null) {
-      return -1;
-    }
-    return first.deadline.localeCompare(second.deadline);
-  }
-
-  /** Selects the first upcoming surveys from the sorted active list. */
-  updateEndingSoonSurveys(activeSurveys: SavedSurvey[]): void {
-    const SURVEYS_WITH_DEADLINE: SavedSurvey[] = activeSurveys.filter(
-      (survey: SavedSurvey): boolean => survey.deadline !== null,
-    );
-    this.endingSoonSurveys.set(
-      SURVEYS_WITH_DEADLINE.slice(0, ENDING_SOON_LIMIT),
     );
   }
 }

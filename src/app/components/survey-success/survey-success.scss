@@ -46,6 +46,11 @@
   }
 }
 
+.create-survey__success-overlay button:focus-visible {
+  outline: 2px solid #35273a;
+  outline-offset: 4px;
+}
+
 @keyframes success-slide-in {
   from {
     transform: translateX(calc(100% + 24px));

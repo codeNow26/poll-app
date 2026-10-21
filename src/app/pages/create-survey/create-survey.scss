@@ -1,6 +1,5 @@
-@use './survey-fields';
 @use './survey-questions';
-@use './survey-overlay';
+@use '../../../styles/survey-controls';
 
 :host {
   display: block;
@@ -85,39 +84,6 @@
     background-color: #46364d;
   }
 
-  &__delete {
-    display: inline-flex;
-    flex-shrink: 0;
-    align-items: center;
-    justify-content: center;
-    width: 24px;
-    height: 24px;
-    padding: 2px;
-    border: none;
-    border-radius: 3px;
-    background: transparent;
-    color: #fff;
-    font-size: 24px;
-    cursor: pointer;
-    transition: background-color 180ms ease;
-
-    img {
-      display: block;
-      width: 20px;
-      height: 20px;
-      transition: filter 180ms ease;
-    }
-
-    &:hover:not(:disabled),
-    &:focus-visible:not(:disabled) {
-      background-color: #ffd0a1;
-
-      img {
-        filter: brightness(0) saturate(100%);
-      }
-    }
-  }
-
   &__actions {
     display: flex;
     justify-content: flex-end;
@@ -163,22 +129,6 @@
         transform: translateX(0);
       }
     }
-  }
-
-  &__error {
-    margin: 4px 0 0;
-    color: #ffb3b3;
-    font-size: 16px;
-    line-height: 1.4;
-
-    &--hidden {
-      visibility: hidden;
-    }
-  }
-
-  button:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
   }
 
   button:focus-visible {

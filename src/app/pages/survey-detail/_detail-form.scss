@@ -1,0 +1,129 @@
+.survey-detail {
+  &__form {
+    min-width: 0;
+    padding: 40px 32px;
+    border-radius: 0 140px 0 0;
+    background-color: #f2edf5;
+  }
+
+  &__status {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 0 12px 0 0;
+    background-color: #ffb770;
+    font-size: 16px;
+  }
+
+  &__metadata {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+    margin-top: 12px;
+    font-size: 16px;
+    line-height: 1.4;
+
+    p {
+      margin: 0;
+    }
+
+    .survey-detail__category {
+      margin-left: auto;
+      text-align: right;
+    }
+  }
+
+  &__title {
+    margin: 12px 0 16px;
+    color: #f39125;
+    font-family: 'Nerko One', cursive;
+    font-size: 44px;
+    font-weight: 400;
+    line-height: 1.05;
+    overflow-wrap: anywhere;
+  }
+
+  &__description {
+    margin: 0;
+    font-size: 16px;
+    line-height: 1.5;
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+  }
+
+  &__close {
+    display: none;
+  }
+}
+
+@media (max-width: 1000px) {
+  .survey-detail__form {
+    padding: 32px 24px;
+    border-top-right-radius: 100px;
+  }
+}
+
+@media (max-width: 900px) {
+  .survey-detail {
+    &__form {
+      position: relative;
+      padding: 32px 20px;
+      border-top-right-radius: 80px;
+    }
+
+    &__title {
+      font-size: 36px;
+    }
+
+    &__close {
+      position: absolute;
+      top: 32px;
+      right: 20px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background-color: #ffd0a1;
+      color: #35273a;
+      font-size: 26px;
+      line-height: 1;
+      text-decoration: none;
+
+      &:hover {
+        background-color: #ffb770;
+      }
+
+      &:focus-visible {
+        outline: 2px solid #35273a;
+        outline-offset: 3px;
+      }
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .survey-detail {
+    &__form {
+      padding: 24px 12px;
+      border-top-right-radius: 48px;
+    }
+
+    &__metadata {
+      flex-direction: column;
+      align-items: flex-start;
+
+      .survey-detail__category {
+        margin-left: 0;
+        text-align: left;
+      }
+    }
+
+    &__close {
+      top: 24px;
+      right: 12px;
+    }
+  }
+}

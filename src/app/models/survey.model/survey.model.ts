@@ -1,4 +1,7 @@
-import { SurveyQuestion, SavedSurveyQuestion } from "./survey-question.model";
+import {
+  SurveyQuestion,
+  SavedSurveyQuestion,
+} from './survey-question.model';
 
 export interface Survey {
   category: string;
